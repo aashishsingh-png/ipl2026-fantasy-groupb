@@ -1,0 +1,79 @@
+name: Auto-Update IPL Match Scores
+
+on:
+  # ── Automatic triggers ──────────────────────────────────────────────────────
+  schedule:
+    # Runs at 11:00 PM IST = 5:30 PM UTC every day during IPL season
+    - cron: '30 17 * * *'
+    # Also runs at 11:00 AM IST next morning = 5:30 AM UTC (backup run)
+    - cron: '30 5 * * *'
+
+  # ── Manual trigger (run it anytime from GitHub Actions tab) ─────────────────
+  workflow_dispatch:
+    inputs:
+      match_id:
+        description: 'Match ID to update (0-based, leave blank for auto-detect)'
+        required: false
+        default: ''
+      espn_id:
+        description: 'ESPN Cricinfo match ID (leave blank to use configured value)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry run — preview without pushing'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+jobs:
+  update-scores:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to push data.json
+
+    steps:
+      # ── 1. Checkout repo ────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 2. Set up Python ────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ── 3. Run the updater ──────────────────────────────────────────────────
+      - name: Run score updater
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          ARGS=""
+
+          # Match ID override
+          if [ -n "${{ github.event.inputs.match_id }}" ]; then
+            ARGS="$ARGS --match-id ${{ github.event.inputs.match_id }}"
+          fi
+
+          # ESPN ID override
+          if [ -n "${{ github.event.inputs.espn_id }}" ]; then
+            ARGS="$ARGS --espn-id ${{ github.event.inputs.espn_id }}"
+          fi
+
+          # Dry run
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+
+          python scripts/update_scores.py $ARGS
+
+      # ── 4. Summary ──────────────────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        run: |
+          echo "## IPL Score Updater" >> $GITHUB_STEP_SUMMARY
+          echo "Ran at: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "Repo: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
