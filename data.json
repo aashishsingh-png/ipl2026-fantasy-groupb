@@ -1,143 +1,147 @@
 {
-  "lastUpdated": "31 Mar 2026",
+  "lastUpdated": "2026-03-31 12:00",
   "matches": [
-    { "id": 0, "label": "Match 1", "teams": "RCB vs SRH", "date": "28 Mar", "done": true },
-    { "id": 1, "label": "Match 2", "teams": "MI vs KKR",  "date": "29 Mar", "done": true },
-    { "id": 2, "label": "Match 3", "teams": "RR vs CSK",  "date": "30 Mar", "done": true },
-    { "id": 3, "label": "Match 4", "teams": "PBKS vs GT", "date": "31 Mar", "done": false },
-    { "id": 4, "label": "Match 5", "teams": "DC vs LSG",  "date": "1 Apr",  "done": false }
+    { "id": 0, "label": "Match 1", "date": "28 Mar", "done": true },
+    { "id": 1, "label": "Match 2", "date": "29 Mar", "done": true },
+    { "id": 2, "label": "Match 3", "date": "30 Mar", "done": true },
+    { "id": 3, "label": "Match 4", "date": "31 Mar", "done": false },
+    { "id": 4, "label": "Match 5", "date": "1 Apr", "done": false }
   ],
   "players": {
-    "Ishan Kishan": {
-      "m0": { "runs": 80, "balls": 38, "fours": 8, "sixes": 5, "lineup": true, "impact": false },
-      "m1": null, "m2": null, "m3": null, "m4": null
-    },
-    "Virat Kohli": {
-      "m0": { "runs": 69, "balls": 38, "fours": 5, "sixes": 5, "catches": 1, "lineup": true, "impact": false },
-      "m1": null, "m2": null, "m3": null, "m4": null
-    },
-    "Rohit Sharma": {
+    "Mohammed Siraj":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Quinton de Kock":        { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Marco Jansen":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Varun Chakaravarthy":    {
       "m0": null,
-      "m1": { "runs": 78, "balls": 38, "fours": 6, "sixes": 6, "lineup": true, "impact": false },
+      "m1": { "runs": 0, "balls": 0, "fours": 0, "sixes": 0, "wickets": 0, "overs": 2, "runsConceded": 24, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
       "m2": null, "m3": null, "m4": null
     },
-    "Vaibhav Sooryavanshi": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 52, "balls": 17, "fours": 4, "sixes": 5, "lineup": true, "impact": false },
+    "Kuldeep Yadav":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Sunil Narine":           {
+      "m0": null,
+      "m1": { "runs": 0, "balls": 0, "fours": 0, "sixes": 0, "wickets": 0, "overs": 2, "runsConceded": 20, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
+      "m2": null, "m3": null, "m4": null
+    },
+    "Hardik Pandya":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Finn Allen":             { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Prasidh Krishna":        { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Priyansh Arya":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Vaibhav Arora":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Bhuvneshwar Kumar":      { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Ishan Kishan":           {
+      "m0": null,
+      "m1": null,
+      "m2": { "runs": 80, "balls": 50, "fours": 8, "sixes": 3, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
       "m3": null, "m4": null
     },
-    "Ajinkya Rahane": {
+    "Rohit Sharma":           {
       "m0": null,
-      "m1": { "runs": 67, "balls": 40, "fours": 3, "sixes": 5, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Finn Allen": {
-      "m0": null,
-      "m1": { "runs": 37, "balls": 17, "fours": 6, "sixes": 2, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Suryakumar Yadav": {
-      "m0": null,
-      "m1": { "runs": 16, "balls": 8, "fours": 3, "lineup": false, "impact": true },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Jasprit Bumrah": {
-      "m0": null,
-      "m1": { "overs": 4, "runs_conceded": 35, "dots": 4, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Hardik Pandya": {
-      "m0": null,
-      "m1": { "runs": 18, "balls": 11, "fours": 3, "wickets": 1, "blbw": 1, "overs": 3, "runs_conceded": 39, "dots": 7, "catches": 1, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Ravindra Jadeja": {
-      "m0": null, "m1": null,
-      "m2": { "wickets": 2, "blbw": 1, "overs": 3, "runs_conceded": 18, "dots": 11, "catches": 1, "lineup": true, "impact": false },
+      "m1": null,
+      "m2": { "runs": 78, "balls": 48, "fours": 7, "sixes": 4, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
       "m3": null, "m4": null
     },
-    "Devdutt Padikkal": {
-      "m0": { "runs": 61, "balls": 26, "fours": 7, "sixes": 4, "catches": 3, "lineup": false, "impact": true },
-      "m1": null, "m2": null, "m3": null, "m4": null
+    "Jofra Archer":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Jasprit Bumrah":         {
+      "m0": null,
+      "m1": { "runs": 0, "balls": 0, "fours": 0, "sixes": 0, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
+      "m2": null, "m3": null, "m4": null
     },
-    "Heinrich Klaasen": {
-      "m0": { "runs": 31, "balls": 22, "fours": 2, "sixes": 1, "catches": 2, "lineup": true, "impact": false },
-      "m1": null, "m2": null, "m3": null, "m4": null
-    },
-    "Yashasvi Jaiswal": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 38, "balls": 36, "fours": 3, "sixes": 1, "catches": 1, "lineup": true, "impact": false },
+    "Shivam Dube":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Ajinkya Rahane":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Axar Patel":             { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Jacob Bethell":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Will Jacks":             { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Ashwani Kumar":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Shubman Gill":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Abhishek Sharma":        { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Yashasvi Jaiswal":       { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Mohammed Shami":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Avesh Khan":             { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Nitish Kumar Reddy":     { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Angkrish Raghuvanshi":   { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Harshal Patel":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Pathum Nissanka":        { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Azmatullah Omarzai":     { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "T Natarajan":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Rinku Singh":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "KL Rahul":               { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Aiden Markram":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Rishabh Pant":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Ruturaj Gaikwad":        { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Dewald Brevis":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Tim David":              { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Dhruv Jurel":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Prabhsimran Singh":      { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Jason Holder":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Harsh Dubey":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Riyan Parag":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Ravindra Jadeja":        {
+      "m0": null,
+      "m1": null,
+      "m2": { "runs": 0, "balls": 0, "fours": 0, "sixes": 0, "wickets": 1, "overs": 4, "runsConceded": 24, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
       "m3": null, "m4": null
     },
-    "Sunil Narine": {
+    "Sai Sudharsan":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Virat Kohli":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Josh Hazlewood":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Suryakumar Yadav":       {
       "m0": null,
-      "m1": { "wickets": 1, "overs": 3, "runs_conceded": 30, "dots": 6, "lineup": true, "impact": false },
+      "m1": { "runs": 0, "balls": 0, "fours": 0, "sixes": 0, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": false, "impact": true },
       "m2": null, "m3": null, "m4": null
     },
-    "Bhuvneshwar Kumar": {
-      "m0": { "wickets": 1, "overs": 4, "runs_conceded": 31, "dots": 9, "lineup": true, "impact": false },
+    "Marcus Stoinis":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Mukesh Kumar":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Digvesh Singh Rathi":    { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Karun Nair":             { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Khaleel Ahmed":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Heinrich Klaasen":       {
+      "m0": { "runs": 31, "balls": 20, "fours": 2, "sixes": 2, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
       "m1": null, "m2": null, "m3": null, "m4": null
     },
-    "Sanju Samson": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 6, "balls": 7, "fours": 1, "lineup": true, "impact": false }
-    },
-    "Ruturaj Gaikwad": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 6, "balls": 11, "fours": 1, "lineup": true, "impact": false }
-    },
-    "Shivam Dube": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 6, "balls": 4, "sixes": 1, "lineup": true, "impact": false }
-    },
-    "Riyan Parag": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 14, "balls": 11, "fours": 1, "sixes": 1, "lineup": true, "impact": false }
-    },
-    "Cameron Green": {
-      "m0": null,
-      "m1": { "runs": 18, "balls": 10, "fours": 1, "sixes": 1, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Rinku Singh": {
-      "m0": null,
-      "m1": { "runs": 33, "balls": 21, "fours": 4, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Tilak Varma": {
-      "m0": null,
-      "m1": { "runs": 20, "balls": 14, "fours": 4, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Varun Chakaravarthy": {
-      "m0": null,
-      "m1": { "overs": 4, "runs_conceded": 48, "dots": 5, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Trent Boult": {
-      "m0": null,
-      "m1": { "overs": 4, "runs_conceded": 38, "dots": 7, "lineup": true, "impact": false },
-      "m2": null, "m3": null, "m4": null
-    },
-    "Ayush Mhatre": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 0, "balls": 1, "duck": true, "lineup": true, "impact": false }
-    },
-    "Philip Salt": {
-      "m0": { "runs": 1, "balls": 5, "fours": 0, "catches": 3, "lineup": true, "impact": false },
+    "Rajat Patidar":          {
+      "m0": { "runs": 31, "balls": 20, "fours": 2, "sixes": 2, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
       "m1": null, "m2": null, "m3": null, "m4": null
     },
-    "Rajat Patidar": {
-      "m0": { "runs": 31, "balls": 12, "fours": 3, "sixes": 1, "lineup": true, "impact": false },
+    "Sanju Samson":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Cameron Green":          {
+      "m0": null,
+      "m1": { "runs": 18, "balls": 10, "fours": 2, "sixes": 1, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 0, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
+      "m2": null, "m3": null, "m4": null
+    },
+    "Kagiso Rabada":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Tristan Stubbs":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Krunal Pandya":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Ryan Rickelton":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Ayush Mhatre":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Romario Shepherd":       { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Washington Sundar":      { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Mitchell Marsh":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Nicholas Pooran":        { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Shreyas Iyer":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Philip Salt":            {
+      "m0": { "runs": 1, "balls": 5, "fours": 0, "sixes": 0, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 3, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
       "m1": null, "m2": null, "m3": null, "m4": null
     },
-    "Abhishek Sharma": {
-      "m0": { "runs": 7, "balls": 8, "sixes": 1, "lineup": true, "impact": false },
+    "Yuzvendra Chahal":       { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Ravi Bishnoi":           { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Noor Ahmad":             { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Matt Henry":             { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Abishek Porel":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Devdutt Padikkal":       {
+      "m0": { "runs": 0, "balls": 0, "fours": 0, "sixes": 0, "wickets": 0, "overs": 0, "runsConceded": 0, "catches": 3, "stumpings": 0, "runouts": 0, "lineup": true, "impact": false },
       "m1": null, "m2": null, "m3": null, "m4": null
     },
-    "Travis Head": {
-      "m0": { "runs": 11, "balls": 9, "fours": 2, "lineup": true, "impact": false },
-      "m1": null, "m2": null, "m3": null, "m4": null
-    }
+    "Shashank Singh":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Vaibhav Sooryavanshi":   { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Tilak Varma":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Arshdeep Singh":         { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Rashid Khan":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Jos Buttler":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Shimron Hetmyer":        { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Travis Head":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Jitesh Sharma":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Trent Boult":            { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Mitchell Santner":       { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null },
+    "Nehal Wadhera":          { "m0": null, "m1": null, "m2": null, "m3": null, "m4": null }
   }
 }
