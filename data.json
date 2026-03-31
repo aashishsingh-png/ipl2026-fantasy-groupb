@@ -16,26 +16,14 @@
       "m0": { "runs": 69, "balls": 38, "fours": 5, "sixes": 5, "catches": 1, "lineup": true, "impact": false },
       "m1": null, "m2": null
     },
-    "Devdutt Padikkal": {
-      "m0": { "runs": 61, "balls": 26, "fours": 7, "sixes": 4, "catches": 3, "lineup": false, "impact": true },
-      "m1": null, "m2": null
-    },
-    "Heinrich Klaasen": {
-      "m0": { "runs": 31, "balls": 22, "fours": 2, "sixes": 1, "catches": 2, "lineup": true, "impact": false },
-      "m1": null, "m2": null
-    },
-    "Rajat Patidar": {
-      "m0": { "runs": 31, "balls": 12, "fours": 3, "sixes": 1, "lineup": true, "impact": false },
-      "m1": null, "m2": null
-    },
-    "Philip Salt": {
-      "m0": { "runs": 1, "balls": 5, "fours": 0, "sixes": 0, "catches": 3, "lineup": true, "impact": false },
-      "m1": null, "m2": null
-    },
     "Rohit Sharma": {
       "m0": null,
       "m1": { "runs": 78, "balls": 38, "fours": 6, "sixes": 6, "lineup": true, "impact": false },
       "m2": null
+    },
+    "Vaibhav Sooryavanshi": {
+      "m0": null, "m1": null,
+      "m2": { "runs": 52, "balls": 17, "fours": 4, "sixes": 5, "lineup": true, "impact": false }
     },
     "Ajinkya Rahane": {
       "m0": null,
@@ -47,9 +35,9 @@
       "m1": { "runs": 37, "balls": 17, "fours": 6, "sixes": 2, "lineup": true, "impact": false },
       "m2": null
     },
-    "Hardik Pandya": {
+    "Suryakumar Yadav": {
       "m0": null,
-      "m1": { "runs": 18, "balls": 11, "fours": 3, "sixes": 0, "wickets": 1, "blbw": 1, "overs": 3, "runs_conceded": 39, "dots": 7, "catches": 1, "lineup": true, "impact": false },
+      "m1": { "runs": 16, "balls": 8, "fours": 3, "sixes": 0, "lineup": false, "impact": true },
       "m2": null
     },
     "Jasprit Bumrah": {
@@ -57,52 +45,35 @@
       "m1": { "overs": 4, "runs_conceded": 35, "dots": 4, "lineup": true, "impact": false },
       "m2": null
     },
-    "Cameron Green": {
+    "Hardik Pandya": {
       "m0": null,
-      "m1": { "runs": 18, "balls": 10, "fours": 1, "sixes": 1, "lineup": true, "impact": false },
+      "m1": { "runs": 18, "balls": 11, "fours": 3, "wickets": 1, "blbw": 1, "overs": 3, "runs_conceded": 39, "dots": 7, "catches": 1, "lineup": true, "impact": false },
       "m2": null
     },
-    "Suryakumar Yadav": {
-      "m0": null,
-      "m1": { "runs": 16, "balls": 8, "fours": 3, "sixes": 0, "lineup": false, "impact": true },
-      "m2": null
+    "Ravindra Jadeja": {
+      "m0": null, "m1": null,
+      "m2": { "wickets": 2, "blbw": 1, "overs": 3, "runs_conceded": 18, "dots": 11, "catches": 1, "lineup": true, "impact": false }
     },
-    "Rinku Singh": {
-      "m0": null,
-      "m1": { "runs": 33, "balls": 21, "fours": 4, "lineup": true, "impact": false },
-      "m2": null
+    "Devdutt Padikkal": {
+      "m0": { "runs": 61, "balls": 26, "fours": 7, "sixes": 4, "catches": 3, "lineup": false, "impact": true },
+      "m1": null, "m2": null
     },
-    "Tilak Varma": {
-      "m0": null,
-      "m1": { "runs": 20, "balls": 14, "fours": 4, "lineup": true, "impact": false },
-      "m2": null
+    "Heinrich Klaasen": {
+      "m0": { "runs": 31, "balls": 22, "fours": 2, "sixes": 1, "catches": 2, "lineup": true, "impact": false },
+      "m1": null, "m2": null
+    },
+    "Yashasvi Jaiswal": {
+      "m0": null, "m1": null,
+      "m2": { "runs": 38, "balls": 36, "fours": 3, "sixes": 1, "catches": 1, "lineup": true, "impact": false }
     },
     "Sunil Narine": {
       "m0": null,
       "m1": { "wickets": 1, "overs": 3, "runs_conceded": 30, "dots": 6, "lineup": true, "impact": false },
       "m2": null
     },
-    "Varun Chakaravarthy": {
-      "m0": null,
-      "m1": { "overs": 4, "runs_conceded": 48, "dots": 5, "lineup": true, "impact": false },
-      "m2": null
-    },
-    "Trent Boult": {
-      "m0": null,
-      "m1": { "overs": 4, "runs_conceded": 38, "dots": 7, "lineup": true, "impact": false },
-      "m2": null
-    },
-    "Vaibhav Sooryavanshi": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 52, "balls": 17, "fours": 4, "sixes": 5, "lineup": true, "impact": false }
-    },
-    "Yashasvi Jaiswal": {
-      "m0": null, "m1": null,
-      "m2": { "runs": 38, "balls": 36, "fours": 3, "sixes": 1, "catches": 1, "lineup": true, "impact": false }
-    },
-    "Ravindra Jadeja": {
-      "m0": null, "m1": null,
-      "m2": { "wickets": 2, "blbw": 1, "overs": 3, "runs_conceded": 18, "dots": 11, "lineup": true, "impact": false }
+    "Bhuvneshwar Kumar": {
+      "m0": { "wickets": 1, "overs": 4, "runs_conceded": 31, "dots": 9, "lineup": true, "impact": false },
+      "m1": null, "m2": null
     },
     "Sanju Samson": {
       "m0": null, "m1": null,
@@ -120,12 +91,41 @@
       "m0": null, "m1": null,
       "m2": { "runs": 14, "balls": 11, "fours": 1, "sixes": 1, "lineup": true, "impact": false }
     },
+    "Cameron Green": {
+      "m0": null,
+      "m1": { "runs": 18, "balls": 10, "fours": 1, "sixes": 1, "lineup": true, "impact": false },
+      "m2": null
+    },
+    "Rinku Singh": {
+      "m0": null,
+      "m1": { "runs": 33, "balls": 21, "fours": 4, "lineup": true, "impact": false },
+      "m2": null
+    },
+    "Tilak Varma": {
+      "m0": null,
+      "m1": { "runs": 20, "balls": 14, "fours": 4, "lineup": true, "impact": false },
+      "m2": null
+    },
+    "Varun Chakaravarthy": {
+      "m0": null,
+      "m1": { "overs": 4, "runs_conceded": 48, "dots": 5, "lineup": true, "impact": false },
+      "m2": null
+    },
+    "Trent Boult": {
+      "m0": null,
+      "m1": { "overs": 4, "runs_conceded": 38, "dots": 7, "lineup": true, "impact": false },
+      "m2": null
+    },
     "Ayush Mhatre": {
       "m0": null, "m1": null,
       "m2": { "runs": 0, "balls": 1, "duck": true, "lineup": true, "impact": false }
     },
-    "Bhuvneshwar Kumar": {
-      "m0": { "wickets": 1, "overs": 4, "runs_conceded": 31, "dots": 9, "lineup": true, "impact": false },
+    "Philip Salt": {
+      "m0": { "runs": 1, "balls": 5, "catches": 3, "lineup": true, "impact": false },
+      "m1": null, "m2": null
+    },
+    "Rajat Patidar": {
+      "m0": { "runs": 31, "balls": 12, "fours": 3, "sixes": 1, "lineup": true, "impact": false },
       "m1": null, "m2": null
     },
     "Abhishek Sharma": {
