@@ -1,674 +1,1127 @@
-import { useState } from "react";
-
-// ═══════════════════════════════════════════════════════════════
-// DREAM11 T20 SCORING — verified from dream11.com/fantasy-cricket/point-system
-// ═══════════════════════════════════════════════════════════════
-// BATTING: run+1, 4-bonus+4, 6-bonus+6, 25+:+4, 50+:+8, 75+:+12, 100+:+16
-//          (highest milestone only, no stacking), duck:-2
-//          SR(≥10 balls): >170:+6, 150.01-170:+4, 130-150:+2, 60-70:-2, 50-59.99:-4, <50:-6
-// BOWLING: dot+1, wkt+30, LBW/bowled+8, 3W:+4, 4W:+8, 5W:+12, maiden+12
-//          Eco(≥2 overs): <5:+6, 5-5.99:+4, 6-7:+2, 10-11:-2, 11.01-12:-4, >12:-6
-// FIELDING: catch+8, 3-catch-bonus+4, stumping+12, RO-direct+12, RO-indirect+6
-// OTHER: announced+4, impact-sub+4, C:×2, VC:×1.5
-
-const SR = (r, b) => {
-  if (b < 10) return 0;
-  const s = (r / b) * 100;
-  if (s > 170) return 6; if (s > 150) return 4; if (s >= 130) return 2;
-  if (s >= 70) return 0; if (s >= 60) return -2; if (s >= 50) return -4;
-  return -6;
-};
-const ECO = (r, o) => {
-  if (o < 2) return 0;
-  const e = r / o;
-  if (e < 5) return 6; if (e < 6) return 4; if (e <= 7) return 2;
-  if (e <= 10) return 0; if (e <= 11) return -2; if (e <= 12) return -4;
-  return -6;
-};
-const MS = r => r >= 100 ? 16 : r >= 75 ? 12 : r >= 50 ? 8 : r >= 25 ? 4 : 0;
-
-// bat(runs, balls, 4s, 6s, duck)  — +4 announced included
-const BAT = (r, b, f4, s6, duck = false) =>
-  4 + r + f4*4 + s6*6 + MS(r) + (duck ? -2 : 0) + SR(r, b);
-
-// bowl(overs, runs, wkts, dots, maidens=0, lbwBowled=0) — +4 announced included
-const BOWL = (o, r, w, d, m = 0, lb = 0) => {
-  let p = 4 + d + w*30 + lb*8 + m*12;
-  if (w >= 5) p += 12; else if (w >= 4) p += 8; else if (w >= 3) p += 4;
-  return p + ECO(r, o);
-};
-
-// field(catches, stumpings, rodirect, roindirect)
-const FLD = (c=0, st=0, rod=0, roi=0) =>
-  c*8 + (c >= 3 ? 4 : 0) + st*12 + rod*12 + roi*6;
-
-// ═══════════════════════════════════════════════════════════════
-// VERIFIED SCORECARD — ESPN Official (all 3 matches confirmed)
-// M1 = RCB vs SRH (Mar 28) | M2 = MI vs KKR (Mar 29) | M3 = RR vs CSK (Mar 30)
-//
-// KEY RULES APPLIED:
-// • Announced +4 included in BAT/BOWL. For bat+bowl same match: subtract 4 once.
-// • Impact subs get +4 (covered by same announced rule).
-// • All pts floored at 0 per player-match.
-// • SR applies only ≥10 balls faced.
-// • Eco applies only ≥2 overs bowled.
-// • 3-catch bonus +4 applies when fielder takes 3+ catches in a match.
-// • Stumpings only count for WK.
-// ═══════════════════════════════════════════════════════════════
-
-// Helper — bat+bowl combined (one appearance only)
-const BATBOWL = (r,b,f4,s6,duck, o,runs,w,d,m=0,lb=0) =>
-  BAT(r,b,f4,s6,duck) + BOWL(o,runs,w,d,m,lb) - 4;
-
-const RAW = {
-
-  // ════════════════════════════════════════════
-  // T1 — Nishant & Mainak  |  C: Finn Allen  VC: Hardik Pandya
-  // ════════════════════════════════════════════
-
-  "Finn Allen": {
-    // M2 KKR XI: Bat 37(17) 6×4 2×6 | SR=(37/17)×100=217.6 >170 +6 | milestone 25+:+4
-    M2: BAT(37,17,6,2),
-    // breakdown: 4+37+24+12+4(25+)+6(SR>170) = 87
-    note2: "37(17) 6×4 2×6 | SR217>170+6 | 4+37+24+12+4+6=87"
-  },
-  "Hardik Pandya": {
-    // M2 MI XI (captain — but C mult applied later per team):
-    // Bat 18(11) 3×4 0×6 SR163 150-170+4, no milestone
-    // Bowl 3-0-39-1 eco=13>12 -6, 7 dots, 1 wkt
-    // Field: catch of Rahane (off own bowling — still counts as catch)
-    // bat+bowl combined (one appearance), then add fielding
-    M2: BATBOWL(18,11,3,0,false, 3,39,1,7) + FLD(1),
-    // Bat: 4+18+12+4(SR150-170) = 38 | Bowl: 30wkt+7dots-6eco = 31 | Field: 8 | -4 double app | =73
-    note2: "Bat 18(11)3×4 SR163 +4(SR) | Bowl 3-0-39-1 eco13(-6)7dots | Catch Rahane | 38+31+8-4=73"
-  },
-  "Sunil Narine": {
-    // M2 KKR XI: Bowl 3-0-30-1 eco=10 10-11 -2, 6 dots, 1wkt (Tilak, caught)
-    M2: BOWL(3,30,1,6),
-    // 4+30+6dots-2eco = 38
-    note2: "Bowl 3-0-30-1 eco10(-2) 6dots | 4+30+6-2=38"
-  },
-  "Vaibhav Arora": {
-    // M2 KKR XI: Bowl 4-0-52-1 eco=13>12 -6, 8 dots, 1wkt (Rohit, caught)
-    M2: BOWL(4,52,1,8),
-    // 4+30+8dots-6eco = 36
-    note2: "Bowl 4-0-52-1 eco13(>12,-6) 8dots | 4+30+8-6=36"
-  },
-  "Varun Chakaravarthy": {
-    // M2 KKR XI: Bowl 4-0-48-0 eco=12 11.01-12 -4, 5 dots, 0 wkts
-    M2: BOWL(4,48,0,5),
-    // 4+5dots-4eco = 5
-    note2: "Bowl 4-0-48-0 eco12(-4) 5dots | 4+5-4=5"
-  },
-  "Mohammed Siraj":      {},
-  "Quinton de Kock":     {}, // Not in XI any match
-  "Marco Jansen":        {},
-  "Kuldeep Yadav":       {},
-  "Prasidh Krishna":     {},
-  "Priyansh Arya":       {},
-
-  // ════════════════════════════════════════════
-  // T2 — Smatish & Swapnesh  |  C: Ishan Kishan  VC: Axar Patel
-  // ════════════════════════════════════════════
-
-  "Ishan Kishan": {
-    // M1 SRH XI (C+WK): Bat 80(38) 8×4 5×6 SR=210.5>170+6 | milestone 75+:+12
-    // WK Stumping: 1 (user confirmed) +12
-    M1: BAT(80,38,8,5) + FLD(0,1),
-    // 4+80+32+30+12(75+)+6(SR>170) = 164 | Stumping +12 | =176
-    note1: "Bat 80(38)8×4 5×6 SR210+6 milestone75+12 | WK stumping+12 | 164+12=176"
-  },
-  "Rohit Sharma": {
-    // M2 MI XI: Bat 78(38) 6×4 6×6 SR=205.3>170+6 | milestone 50+:+8
-    M2: BAT(78,38,6,6),
-    // 4+78+24+36+8(50+)+6(SR>170) = 156
-    note2: "Bat 78(38)6×4 6×6 SR205+6 milestone50+8 | 4+78+24+36+8+6=156"
-  },
-  "Ajinkya Rahane": {
-    // M2 KKR XI (captain): Bat 67(40) 3×4 5×6 SR=167.5 150-170+4 | milestone 50+:+8
-    M2: BAT(67,40,3,5),
-    // 4+67+12+30+8(50+)+4(SR150-170) = 125
-    note2: "Bat 67(40)3×4 5×6 SR167+4 milestone50+8 | 4+67+12+30+8+4=125"
-  },
-  "Bhuvneshwar Kumar": {
-    // M1 RCB XI: Bowl 4-0-31-1 eco=7.75 6-7+2, 9dots | wkt Harshal (caught, no LBW/bowled bonus)
-    M1: BOWL(4,31,1,9),
-    // 4+30+9dots+2eco = 45
-    note1: "Bowl 4-0-31-1 eco7.75(+2) 9dots | 4+30+9+2=45"
-  },
-  "Shivam Dube": {
-    // M3 CSK XI: Bat 6(4) 0×4 1×6 SR=150 — 4 balls <10 → no SR bonus | no milestone
-    M3: BAT(6,4,0,1),
-    // 4+6+6 = 16
-    note3: "Bat 6(4)1×6 SR150(4b<10,no SR) | 4+6+6=16"
-  },
-  "Jasprit Bumrah": {
-    // M2 MI XI (impact sub): Bowl 4-0-35-0 eco=8.75 7-10→0, 4 dots
-    M2: BOWL(4,35,0,4),
-    // 4+4dots+0eco = 8
-    note2: "Bowl 4-0-35-0 eco8.75(no bonus/penalty) 4dots | 4+4=8"
-  },
-  "Axar Patel":    {},
-  "Jacob Bethell": {},
-  "Will Jacks":    {},
-  "Ashwani Kumar": {},
-  "Jofra Archer": {
-    // M3 RR XI: Bowl 4-0-19-2 eco=4.75<5+6, 17dots
-    // Wkts: Gaikwad (BOWLED +8 bonus) + Noor (caught, no extra bonus)
-    M3: BOWL(4,19,2,17,0,1),
-    // 4+60wkts+8LBW+17dots+6eco = 95
-    note3: "Bowl 4-0-19-2 eco4.75(<5,+6) 17dots Gaikwad-bowled+8 | 4+60+8+17+6=95"
-  },
-
-  // ════════════════════════════════════════════
-  // T3 — Dhruv & Vishal  |  C: Shubman Gill  VC: Yashasvi Jaiswal
-  // ════════════════════════════════════════════
-
-  "Angkrish Raghuvanshi": {
-    // M2 KKR XI (WK): Bat 51(29) 6×4 2×6 SR=175.9>170+6 | milestone 50+:+8
-    M2: BAT(51,29,6,2),
-    // 4+51+24+12+8(50+)+6(SR>170) = 105
-    note2: "Bat 51(29)6×4 2×6 SR175+6 milestone50+8 | 4+51+24+12+8+6=105"
-  },
-  "Yashasvi Jaiswal": {
-    // M3 RR XI: Bat 38*(36) 3×4 1×6 SR=105.6 70-130→0 | milestone 25+:+4
-    // Field: caught Short off Sandeep Sharma
-    M3: BAT(38,36,3,1) + FLD(1),
-    // 4+38+12+6+4(25+)+0SR = 64 | catch+8 = 72
-    note3: "Bat 38*(36)3×4 1×6 SR105(0) milestone25+4 | catch Short+8 | 64+8=72"
-  },
-  "Abhishek Sharma": {
-    // M1 SRH XI: Bat 7(8) 0×4 1×6 — 8 balls <10 → no SR bonus | no milestone
-    M1: BAT(7,8,0,1),
-    // 4+7+6 = 17
-    note1: "Bat 7(8)1×6 SR87(8b<10,no SR) | 4+7+6=17"
-  },
-  "Mohammed Shami":      {},
-  "Avesh Khan":          {},
-  "Nitish Kumar Reddy": {
-    // M1 SRH XI: bat+bowl same match (one appearance)
-    // Bat 1(6) not duck, SR=16.7 6b<10→no SR | Bowl 2-0-19-0 eco=9.5→0, 5dots
-    M1: BATBOWL(1,6,0,0,false, 2,19,0,5),
-    // Bat: 4+1 = 5 | Bowl: 5dots+0eco = 9 (no +4, already counted) | Total=14
-    note1: "Bat 1(6) SR16(6b<10) | Bowl 2-0-19-0 eco9.5(0) 5dots | 5+9=14 (one app)"
-  },
-  "Harshal Patel": {
-    // M1 SRH XI: bat+bowl same match (one appearance)
-    // Bat 0(2) DUCK, 2b<10→no SR | Bowl 2.4-0-39-0 eco=14.6>12 -6, 3dots
-    M1: BATBOWL(0,2,0,0,true, 2.667,39,0,3),
-    // Bat: 4-2 = 2 | Bowl: 3dots-6eco = -3+4 wait…
-    // BATBOWL = BAT + BOWL - 4
-    // BAT(0,2,0,0,true) = 4+0+0+0+0-2+SR(0,2) = 4-2=2
-    // BOWL(2.667,39,0,3) = 4+3+0-6 = 1
-    // BATBOWL = 2+1-4 = -1 → floored to 0... wait no, let's keep correct:
-    // Actually BATBOWL = BAT(2) + BOWL(1) - 4 = 2+1-4 = -1 → 0 after floor... 
-    // But player WAS in XI so minimum should be 4 for appearance.
-    // Correct: appearance=4 (once), bat contribution = 0+0+0+0-2=-2, bowl = 3dots-6eco=-3 → 4-2-3=-1 → 0
-    note1: "Bat 0(2) duck | Bowl 2.4ov eco14.6(>12,-6) 3dots | App4+bat(-2)+bowl(3dots-6eco)= -1→0"
-  },
-  "Pathum Nissanka":   {},
-  "Azmatullah Omarzai":{},
-  "T Natarajan":       {},
-  "Shubman Gill":      {},
-
-  // ════════════════════════════════════════════
-  // T4 — Arif & Shailesh  |  C: KL Rahul  VC: Ruturaj Gaikwad
-  // ════════════════════════════════════════════
-
-  "Rinku Singh": {
-    // M2 KKR XI: Bat 33*(21) 4×4 0×6 SR=157.1 150-170+4 | milestone 25+:+4
-    M2: BAT(33,21,4,0),
-    // 4+33+16+4(25+)+4(SR150-170) = 61
-    note2: "Bat 33*(21)4×4 SR157+4 milestone25+4 | 4+33+16+4+4=61"
-  },
-  "Dhruv Jurel": {
-    // M3 RR XI (WK): Bat 18(9) 4×4 0×6 SR=200>170+6 | no milestone
-    // WK catches: Mhatre (off Burger), Noor (off Archer) = 2
-    M3: BAT(18,9,4,0) + FLD(2),
-    // 4+18+16+6(SR>170) = 44 | 2 catches+16 = 60
-    note3: "Bat 18(9)4×4 SR200+6 | WK 2catches+16 | 44+16=60"
-  },
-  "Ruturaj Gaikwad": {
-    // M3 CSK XI: Bat 6(11) 1×4 0×6 SR=54.5 — 11b ≥10 → 50-59.99 -4 | no milestone
-    M3: BAT(6,11,1,0),
-    // 4+6+4-4(SR50-59.99) = 10
-    note3: "Bat 6(11)1×4 SR54.5(≥10b,50-60,-4) | 4+6+4-4=10"
-  },
-  "KL Rahul":           {},
-  "Aiden Markram":      {},
-  "Rishabh Pant":       {},
-  "Dewald Brevis":      {},
-  "Tim David": {
-    // M1 RCB impact sub: Bat 16(10) 1×4 1×6 SR=160 150-170+4 | no milestone
-    M1: BAT(16,10,1,1),
-    // 4+16+4+6+4(SR150-170) = 34
-    note1: "Bat 16(10)1×4 1×6 SR160+4 | 4+16+4+6+4=34"
-  },
-  "Prabhsimran Singh":  {},
-  "Jason Holder":       {},
-  "Harsh Dubey": {
-    // M1 SRH XI: bat+bowl same match (one appearance)
-    // Bat 3(3) 0×4 0×6, 3b<10→no SR, no milestone, not duck
-    // Bowl 3-0-35-1 eco=11.67 11.01-12 -4, 4dots | wkt Padikkal (caught, no LBW bonus)
-    // Field: catch of Patidar off Payne
-    M1: BATBOWL(3,3,0,0,false, 3,35,1,4) + FLD(1),
-    // BAT(3,3,0,0): 4+3=7 | BOWL(3,35,1,4): 4+30+4dots-4eco=34 | BATBOWL=7+34-4=37 | catch+8=45
-    note1: "Bat 3(3) 3b<10 | Bowl 3-0-35-1 eco11.67(-4)4dots wkt-caught | catch Patidar+8 | 7+34-4+8=45"
-  },
-
-  // ════════════════════════════════════════════
-  // T5 — Rahul & Sahil M  |  C: Virat Kohli  VC: Sai Sudharsan
-  // ════════════════════════════════════════════
-
-  "Virat Kohli": {
-    // M1 RCB XI: Bat 69*(38) 5×4 5×6 SR=181.6>170+6 | milestone 50+:+8
-    // Field: catch Aniket Verma off Shepherd
-    M1: BAT(69,38,5,5) + FLD(1),
-    // 4+69+20+30+8(50+)+6(SR>170) = 137 | catch+8 = 145
-    note1: "Bat 69*(38)5×4 5×6 SR181+6 milestone50+8 | catch Aniket+8 | 137+8=145"
-  },
-  "Ravindra Jadeja": {
-    // M3 RR XI: Bowl 3-0-18-2 eco=6 6-7+2, 11dots
-    // Wkts: Sarfaraz LBW+8, Dube caught (no extra)
-    M3: BOWL(3,18,2,11,0,1),
-    // 4+60wkts+8LBW+11dots+2eco = 85
-    note3: "Bowl 3-0-18-2 eco6(+2) 11dots 1LBW+8 | 4+60+8+11+2=85"
-  },
-  "Suryakumar Yadav": {
-    // M2 MI impact sub: Bat 16(8) 3×4 0×6 SR=200>170+6 | no milestone
-    M2: BAT(16,8,3,0),
-    // 4+16+12+6(SR>170) = 38
-    note2: "Bat 16(8)3×4 SR200+6 | 4+16+12+6=38"
-  },
-  "Riyan Parag": {
-    // M3 RR XI: Bat 14*(11) 1×4 1×6 SR=127.3 130>SR>70→0 | no milestone
-    M3: BAT(14,11,1,1),
-    // 4+14+4+6+0SR = 28
-    note3: "Bat 14*(11)1×4 1×6 SR127(0) | 4+14+4+6=28"
-  },
-  "Khaleel Ahmed": {
-    // M3 CSK XI (did not bat): Bowl 3-0-17-0 eco=5.67 5-5.99+4, 10dots
-    M3: BOWL(3,17,0,10),
-    // 4+10dots+4eco = 18
-    note3: "Bowl 3-0-17-0 eco5.67(+4) 10dots | 4+10+4=18"
-  },
-  "Sai Sudharsan":       {},
-  "Josh Hazlewood":      {},
-  "Marcus Stoinis":      {},
-  "Mukesh Kumar":        {},
-  "Digvesh Singh Rathi": {},
-  "Karun Nair":          {},
-
-  // ════════════════════════════════════════════
-  // T6 — Sanidhya & Aashish & Sahil Tagra  |  C: Cameron Green  VC: Sanju Samson
-  // ════════════════════════════════════════════
-
-  "Ryan Rickelton": {
-    // M2 MI XI (WK): Bat 81(43) 4×4 8×6 SR=188.4>170+6 | milestone 75+:+12 | run-out (victim)
-    M2: BAT(81,43,4,8),
-    // 4+81+16+48+12(75+)+6(SR>170) = 167
-    note2: "Bat 81(43)4×4 8×6 SR188+6 milestone75+12 | 4+81+16+48+12+6=167"
-  },
-  "Romario Shepherd": {
-    // M1 RCB XI: Bowl 4-0-54-3 eco=13.5>12 -6, 5dots, 3wkt+4bonus
-    // Wkts: Klaasen (caught), Dubey (caught), Aniket (caught) — none LBW/bowled
-    M1: BOWL(4,54,3,5),
-    // 4+90wkts+4(3W-bonus)+5dots-6eco = 97
-    note1: "Bowl 4-0-54-3 eco13.5(>12,-6)5dots 3Wbonus+4 | 4+90+4+5-6=97"
-  },
-  "Cameron Green": {
-    // M2 KKR XI: Bat 18(10) 1×4 1×6 SR=180>170+6 | no milestone
-    M2: BAT(18,10,1,1),
-    // 4+18+4+6+6(SR>170) = 38
-    note2: "Bat 18(10)1×4 1×6 SR180+6 | 4+18+4+6+6=38"
-  },
-  "Heinrich Klaasen": {
-    // M1 SRH XI (WK): Bat 31(22) 2×4 1×6 SR=140.9 130-150+2 | milestone 25+:+4
-    // Fielding catches (as fielder not WK): Salt (at mid-off), Padikkal (at long-off) = 2 catches
-    M1: BAT(31,22,2,1) + FLD(2),
-    // 4+31+8+6+4(25+)+2(SR130-150) = 55 | 2catches+16 = 71
-    note1: "Bat 31(22)2×4 1×6 SR140+2 milestone25+4 | 2 catches(Salt,Padikkal)+16 | 55+16=71"
-  },
-  "Sanju Samson": {
-    // M3 CSK XI (WK): Bat 6(7) 1×4 0×6 — 7b<10→no SR | no milestone | bowled
-    M3: BAT(6,7,1,0),
-    // 4+6+4 = 14
-    note3: "Bat 6(7)1×4 SR85(7b<10,no SR) | 4+6+4=14"
-  },
-  "Ayush Mhatre": {
-    // M3 CSK XI: Bat 0(1) DUCK — 1b<10→no SR
-    M3: BAT(0,1,0,0,true),
-    // 4-2 = 2
-    note3: "Bat 0(1) duck | 4-2=2"
-  },
-  "Kagiso Rabada":     {},
-  "Tristan Stubbs":    {},
-  "Krunal Pandya": {
-    // M1 RCB XI: Bowl 2-0-26-0 eco=13>12 -6, 1dot | net = 4+1-6 = -1 → 0
-    M1: Math.max(0, BOWL(2,26,0,1)),
-    note1: "Bowl 2-0-26-0 eco13(>12,-6) 1dot | 4+1-6=-1 → 0 (floored)"
-  },
-  "Washington Sundar": {},
-
-  // ════════════════════════════════════════════
-  // T7 — Ishaan & Mohit & Harshank  |  C: Shreyas Iyer  VC: Mitchell Marsh
-  // ════════════════════════════════════════════
-
-  "Devdutt Padikkal": {
-    // M1 RCB impact sub: Bat 61(26) 7×4 4×6 SR=234.6>170+6 | milestone 50+:+8
-    // Field: 3 catches — Arora (off Suyash), Dubey (off Shepherd), Harshal (off Bhuvneshwar)
-    // 3 catches → 3-catch bonus +4
-    M1: BAT(61,26,7,4) + FLD(3),
-    // 4+61+28+24+8(50+)+6(SR>170) = 131 | 3catches+24+4bonus=28 | 131+28=159
-    note1: "Bat 61(26)7×4 4×6 SR234+6 milestone50+8 | 3catches+24+4bonus | 131+28=159"
-  },
-  "Ravi Bishnoi": {
-    // M3 RR XI: Bowl 3-0-16-1 eco=5.33 5-5.99+4, 8dots | wkt Henry (c&b, not LBW/bowled)
-    M3: BOWL(3,16,1,8),
-    // 4+30+8dots+4eco = 46
-    note3: "Bowl 3-0-16-1 eco5.33(+4) 8dots | 4+30+8+4=46"
-  },
-  "Philip Salt": {
-    // M1 RCB XI: Bat 8(7) 2×4 0×6 — 7b<10→no SR | no milestone
-    // Field: 2 catches — Klaasen (off Shepherd, boundary catch), Ishan Kishan (off Abhinandan)
-    M1: BAT(8,7,2,0) + FLD(2),
-    // 4+8+8 = 20 | 2catches+16 = 36
-    note1: "Bat 8(7)2×4 SR114(7b<10,no SR) | 2catches(Klaasen,Kishan)+16 | 20+16=36"
-  },
-  "Matt Henry": {
-    // M3 CSK XI: bat+bowl same match (one appearance)
-    // Bat 5(7) 1×4 — 7b<10→no SR | Bowl 3-0-40-0 eco=13.33>12 -6, 2dots
-    M3: BATBOWL(5,7,1,0,false, 3,40,0,2),
-    // BAT(5,7,1,0): 4+5+4=13 | BOWL(3,40,0,2): 4+2-6=0 | BATBOWL=13+0-4=9
-    note3: "Bat 5(7)1×4 SR71(7b<10) | Bowl 3-0-40-0 eco13.33(>12,-6)2dots | 13+0-4=9"
-  },
-  "Noor Ahmad": {
-    // M3 CSK XI: bat+bowl same match (one appearance)
-    // Bat 1(9) — 9b<10→no SR | Bowl 2-0-24-0 eco=12 11.01-12 -4, 4dots
-    M3: BATBOWL(1,9,0,0,false, 2,24,0,4),
-    // BAT(1,9,0,0): 4+1=5 | BOWL(2,24,0,4): 4+4-4=4 | BATBOWL=5+4-4=5
-    note3: "Bat 1(9) SR11(9b<10) | Bowl 2-0-24-0 eco12(-4)4dots | 5+4-4=5"
-  },
-  "Mitchell Marsh":   {},
-  "Nicholas Pooran":  {},
-  "Shreyas Iyer":     {},
-  "Yuzvendra Chahal": {},
-  "Abishek Porel":    {},
-  "Shashank Singh":   {},
-
-  // ════════════════════════════════════════════
-  // T8 — Abhishek & Jitesh & Girish  |  C: Travis Head  VC: Vaibhav Sooryavanshi
-  // ════════════════════════════════════════════
-
-  "Vaibhav Sooryavanshi": {
-    // M3 RR XI: Bat 52(17) 4×4 5×6 SR=305.9>170+6 | milestone 50+:+8
-    M3: BAT(52,17,4,5),
-    // 4+52+16+30+8(50+)+6(SR>170) = 116
-    note3: "Bat 52(17)4×4 5×6 SR305+6 milestone50+8 | 4+52+16+30+8+6=116"
-  },
-  "Tilak Varma": {
-    // M2 MI XI: Bat 20(14) 4×4 0×6 SR=142.9 130-150+2 | no milestone
-    M2: BAT(20,14,4,0),
-    // 4+20+16+2(SR130-150) = 42
-    note2: "Bat 20(14)4×4 SR142+2 | 4+20+16+2=42"
-  },
-  "Travis Head": {
-    // M1 SRH XI: Bat 11(9) 2×4 0×6 — 9b<10→no SR | no milestone
-    M1: BAT(11,9,2,0),
-    // 4+11+8 = 23
-    note1: "Bat 11(9)2×4 SR122(9b<10,no SR) | 4+11+8=23"
-  },
-  "Trent Boult": {
-    // M2 MI XI: Bowl 4-0-38-0 eco=9.5 7-10→0, 7dots
-    M2: BOWL(4,38,0,7),
-    // 4+7dots+0eco = 11
-    note2: "Bowl 4-0-38-0 eco9.5(0) 7dots | 4+7=11"
-  },
-  "Shimron Hetmyer": {
-    // M3 RR XI — fielded, did not bat
-    // Run-out Overton: indirect (Hetmyer threw to keeper Jurel) → +6
-    // Announced +4 (separate since no bat/bowl)
-    M3: 4 + FLD(0,0,0,1),
-    // 4+6 = 10
-    note3: "Announced+4 | Run-out indirect(Overton via Hetmyer→Jurel)+6 | =10"
-  },
-  "Arshdeep Singh":   {},
-  "Rashid Khan":      {},
-  "Jos Buttler":      {},
-  "Jitesh Sharma": {
-    // M1 RCB XI (WK): Bat 0(1) DUCK — 1b<10→no SR | WK catch: Abhishek Sharma (c†Jitesh b Duffy)
-    M1: BAT(0,1,0,0,true) + FLD(1),
-    // 4-2 = 2 | catch+8 = 10
-    note1: "Bat 0(1) duck | WK catch Abhishek+8 | 2+8=10"
-  },
-  "Mitchell Santner": {},
-  "Nehal Wadhera":    {},
-};
-
-// floor all to 0
-const getBase = (player, match) => {
-  const v = RAW[player]?.[match];
-  if (v === undefined || v === null) return 0;
-  if (typeof v === "number") return Math.max(0, Math.round(v));
-  return 0;
-};
-const getNote = (player, match) => RAW[player]?.["note"+match.slice(1)] || (getBase(player,match)>0?"":"Not in XI");
-
-// ═══════════════════════════════════════════════════════════════
-// TEAM DEFINITIONS
-// ═══════════════════════════════════════════════════════════════
-const TEAMS = {
-  T1:{name:"T1 Nishant & Mainak",c:"Finn Allen",vc:"Hardik Pandya",
-    pl:["Finn Allen","Hardik Pandya","Sunil Narine","Vaibhav Arora","Varun Chakaravarthy","Mohammed Siraj","Quinton de Kock","Marco Jansen","Kuldeep Yadav","Prasidh Krishna","Priyansh Arya"]},
-  T2:{name:"T2 Smatish & Swapnesh",c:"Ishan Kishan",vc:"Axar Patel",
-    pl:["Ishan Kishan","Rohit Sharma","Ajinkya Rahane","Bhuvneshwar Kumar","Shivam Dube","Jasprit Bumrah","Axar Patel","Jacob Bethell","Will Jacks","Ashwani Kumar","Jofra Archer"]},
-  T3:{name:"T3 Dhruv & Vishal",c:"Shubman Gill",vc:"Yashasvi Jaiswal",
-    pl:["Angkrish Raghuvanshi","Yashasvi Jaiswal","Abhishek Sharma","Mohammed Shami","Avesh Khan","Nitish Kumar Reddy","Harshal Patel","Pathum Nissanka","Azmatullah Omarzai","T Natarajan","Shubman Gill"]},
-  T4:{name:"T4 Arif & Shailesh",c:"KL Rahul",vc:"Ruturaj Gaikwad",
-    pl:["Rinku Singh","Dhruv Jurel","Ruturaj Gaikwad","KL Rahul","Aiden Markram","Rishabh Pant","Dewald Brevis","Tim David","Prabhsimran Singh","Jason Holder","Harsh Dubey"]},
-  T5:{name:"T5 Rahul & Sahil M",c:"Virat Kohli",vc:"Sai Sudharsan",
-    pl:["Virat Kohli","Ravindra Jadeja","Suryakumar Yadav","Riyan Parag","Khaleel Ahmed","Sai Sudharsan","Josh Hazlewood","Marcus Stoinis","Mukesh Kumar","Digvesh Singh Rathi","Karun Nair"]},
-  T6:{name:"T6 Sanidhya & Aashish & Sahil Tagra",c:"Cameron Green",vc:"Sanju Samson",
-    pl:["Ryan Rickelton","Romario Shepherd","Cameron Green","Heinrich Klaasen","Sanju Samson","Ayush Mhatre","Kagiso Rabada","Tristan Stubbs","Krunal Pandya","Washington Sundar"]},
-  T7:{name:"T7 Ishaan & Mohit & Harshank",c:"Shreyas Iyer",vc:"Mitchell Marsh",
-    pl:["Devdutt Padikkal","Ravi Bishnoi","Philip Salt","Matt Henry","Noor Ahmad","Mitchell Marsh","Nicholas Pooran","Shreyas Iyer","Yuzvendra Chahal","Abishek Porel","Shashank Singh"]},
-  T8:{name:"T8 Abhishek & Jitesh & Girish",c:"Travis Head",vc:"Vaibhav Sooryavanshi",
-    pl:["Vaibhav Sooryavanshi","Tilak Varma","Travis Head","Trent Boult","Shimron Hetmyer","Arshdeep Singh","Rashid Khan","Jos Buttler","Jitesh Sharma","Mitchell Santner","Nehal Wadhera"]},
-};
-
-const MLS = ["M1","M2","M3"];
-const ML = {M1:"RCB vs SRH (28 Mar)",M2:"MI vs KKR (29 Mar)",M3:"RR vs CSK (30 Mar)"};
-const COL = ["#1d9e75","#378add","#d85a30","#7f77dd","#ba7517","#d4537e","#3b6d11","#5f5e5a"];
-
-const mlt = (p,t) => p===t.c?2:p===t.vc?1.5:1;
-const pPts = (player,tk) => {
-  const t=TEAMS[tk], m=mlt(player,t); let total=0; const pm={};
-  MLS.forEach(match => {
-    const base=getBase(player,match), pts=Math.round(base*m);
-    pm[match]={base,pts}; total+=pts;
-  });
-  return {pm,total,m};
-};
-const tTotal = tk => TEAMS[tk].pl.reduce((s,p)=>s+pPts(p,tk).total,0);
-
-// JSON builder
-const buildJSON = () => {
-  const out = {
-    lastUpdated: new Date().toISOString(),
-    scoringSystem: "Dream11 T20",
-    matches: MLS.map(m=>ML[m]),
-    teams: Object.keys(TEAMS)
-      .map(k=>({k,tot:tTotal(k)}))
-      .sort((a,b)=>b.tot-a.tot)
-      .map(({k})=>{
-        const t=TEAMS[k];
-        return {
-          teamId:k, teamName:t.name, captain:t.c, viceCaptain:t.vc,
-          totalPoints:tTotal(k),
-          players:[...t.pl]
-            .map(p=>({p,...pPts(p,k)}))
-            .sort((a,b)=>b.total-a.total)
-            .map(({p,pm,total,m})=>({
-              name:p,
-              role:p===t.c?"Captain":p===t.vc?"Vice Captain":"Player",
-              multiplier:m,
-              M1_base:pm.M1.base, M1_pts:pm.M1.pts,
-              M2_base:pm.M2.base, M2_pts:pm.M2.pts,
-              M3_base:pm.M3.base, M3_pts:pm.M3.pts,
-              totalPoints:total
-            }))
-        };
-      })
-  };
-  return JSON.stringify(out,null,2);
-};
-
-const ranked = Object.keys(TEAMS).map(k=>({k,tot:tTotal(k)})).sort((a,b)=>b.tot-a.tot);
-const maxT = ranked[0]?.tot||1;
-
-export default function App() {
-  const [view,setView] = useState("board");
-  const [selT,setSelT] = useState("T1");
-  const [selP,setSelP] = useState(null);
-  const [copied,setCopied] = useState(false);
-
-  const B=(lbl,act,fn,sm)=>(
-    <button onClick={fn} style={{padding:sm?"3px 8px":"5px 12px",fontSize:sm?"11px":"12px",
-      cursor:"pointer",borderRadius:"var(--border-radius-md)",
-      border:`0.5px solid var(--color-border-${act?"primary":"tertiary"})`,
-      background:act?"var(--color-background-secondary)":"transparent",
-      color:"var(--color-text-primary)"}}>
-      {lbl}
-    </button>
-  );
-
-  const copyJSON=()=>{
-    navigator.clipboard.writeText(buildJSON()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});
-  };
-
-  return (
-    <div style={{fontFamily:"var(--font-sans)",padding:"0.5rem 0",color:"var(--color-text-primary)"}}>
-      <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"12px"}}>
-        {B("🏆 Leaderboard",view==="board",()=>setView("board"))}
-        {B("📊 Player Breakdown",view==="players",()=>setView("players"))}
-        {B("{} Export JSON",view==="json",()=>setView("json"))}
-      </div>
-
-      {/* LEADERBOARD */}
-      {view==="board"&&(
-        <div>
-          <p style={{fontSize:"12px",color:"var(--color-text-secondary)",marginBottom:"14px"}}>
-            3 matches · Dream11 T20 system · C=2× · VC=1.5× · ESPN verified scorecards
-          </p>
-          {ranked.map(({k,tot},i)=>{
-            const t=TEAMS[k],pct=Math.round((tot/maxT)*100);
-            return(
-              <div key={k} style={{marginBottom:"14px"}}>
-                <div style={{display:"flex",justifyContent:"space-between",fontSize:"13px",marginBottom:"3px"}}>
-                  <span><span style={{fontWeight:500,color:COL[i],marginRight:"6px"}}>#{i+1}</span><span style={{fontWeight:500}}>{t.name}</span></span>
-                  <span style={{fontWeight:500,fontSize:"14px"}}>{tot} pts</span>
-                </div>
-                <div style={{height:"10px",borderRadius:"5px",background:"var(--color-background-secondary)",overflow:"hidden"}}>
-                  <div style={{height:"100%",width:`${pct}%`,background:COL[i],borderRadius:"5px"}}/>
-                </div>
-                <div style={{fontSize:"10px",color:"var(--color-text-tertiary)",marginTop:"2px"}}>
-                  C: {t.c} · VC: {t.vc}
-                </div>
-              </div>
-            );
-          })}
-          <div style={{marginTop:"12px",padding:"10px",background:"var(--color-background-secondary)",borderRadius:"var(--border-radius-md)",fontSize:"11px",color:"var(--color-text-secondary)",lineHeight:"1.8"}}>
-            <strong style={{color:"var(--color-text-primary)"}}>Dream11 T20 rules applied:</strong><br/>
-            Bat: run+1, 4bonus+4, 6bonus+6, milestones(25/50/75/100), duck-2, SR≥10balls<br/>
-            Bowl: dot+1, wkt+30, LBW/Bowled+8, 3W/4W/5W bonus, maiden+12, eco≥2ov<br/>
-            Field: catch+8, 3catch-bonus+4, stumping+12, RO-direct+12, RO-indirect+6
-          </div>
-        </div>
-      )}
-
-      {/* PLAYER BREAKDOWN */}
-      {view==="players"&&(
-        <div>
-          <div style={{display:"flex",gap:"5px",flexWrap:"wrap",marginBottom:"8px"}}>
-            {Object.keys(TEAMS).map(k=>B(k,selT===k,()=>{setSelT(k);setSelP(null);},true))}
-          </div>
-          <div style={{fontSize:"13px",fontWeight:500,marginBottom:"2px"}}>{TEAMS[selT].name}</div>
-          <div style={{fontSize:"11px",color:"var(--color-text-secondary)",marginBottom:"8px"}}>
-            C: {TEAMS[selT].c} (2×) · VC: {TEAMS[selT].vc} (1.5×)
-          </div>
-          {selP&&(
-            <div style={{padding:"10px",background:"var(--color-background-secondary)",borderRadius:"var(--border-radius-md)",marginBottom:"10px",fontSize:"11px",lineHeight:"1.7"}}>
-              <strong style={{color:"var(--color-text-primary)"}}>{selP} — Calculation Breakdown</strong>
-              {MLS.map(m=>{
-                const note=getNote(selP,m),base=getBase(selP,m),{pm,m:mx}=pPts(selP,selT);
-                return(<div key={m}><strong>{m}:</strong> {note||"Not in XI"} {base>0&&mx>1?`→ ×${mx} = ${pm[m].pts}pts`:base>0?`= ${base}pts`:""}</div>);
-              })}
-              <div style={{marginTop:"4px",color:"var(--color-text-tertiary)",cursor:"pointer",fontSize:"10px"}} onClick={()=>setSelP(null)}>✕ close</div>
-            </div>
-          )}
-          <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:"12px"}}>
-              <thead>
-                <tr style={{borderBottom:"0.5px solid var(--color-border-secondary)"}}>
-                  <th style={{textAlign:"left",padding:"5px 6px",fontWeight:500,color:"var(--color-text-secondary)"}}>Player</th>
-                  {MLS.map(m=><th key={m} style={{textAlign:"right",padding:"5px 6px",fontWeight:500,color:"var(--color-text-secondary)",fontSize:"11px"}}>{m}</th>)}
-                  <th style={{textAlign:"right",padding:"5px 6px",fontWeight:500,color:"var(--color-text-secondary)"}}>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...TEAMS[selT].pl].map(p=>({p,...pPts(p,selT)})).sort((a,b)=>b.total-a.total).map(({p,pm,total,m:mx})=>{
-                  const isC=p===TEAMS[selT].c,isVC=p===TEAMS[selT].vc;
-                  return(
-                    <tr key={p} onClick={()=>setSelP(selP===p?null:p)}
-                      style={{borderBottom:"0.5px solid var(--color-border-tertiary)",cursor:"pointer",
-                        background:selP===p?"var(--color-background-secondary)":"transparent"}}>
-                      <td style={{padding:"6px 6px",whiteSpace:"nowrap",fontSize:"12px"}}>
-                        {p}
-                        {isC&&<span style={{marginLeft:"4px",fontSize:"9px",padding:"1px 4px",borderRadius:"3px",background:"var(--color-background-warning)",color:"var(--color-text-warning)",fontWeight:500}}>C 2×</span>}
-                        {isVC&&<span style={{marginLeft:"4px",fontSize:"9px",padding:"1px 4px",borderRadius:"3px",background:"var(--color-background-info)",color:"var(--color-text-info)",fontWeight:500}}>VC 1.5×</span>}
-                      </td>
-                      {MLS.map(m=>(
-                        <td key={m} style={{textAlign:"right",padding:"6px 6px",color:pm[m].pts>0?"var(--color-text-primary)":"var(--color-text-tertiary)"}}>
-                          {pm[m].pts>0?<span title={`Base:${pm[m].base}${mx>1?` ×${mx}`:""}`}>{pm[m].pts}</span>:"—"}
-                        </td>
-                      ))}
-                      <td style={{textAlign:"right",padding:"6px 6px",fontWeight:500}}>{total||"—"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr style={{borderTop:"0.5px solid var(--color-border-secondary)",background:"var(--color-background-secondary)"}}>
-                  <td colSpan={4} style={{padding:"6px 6px",fontWeight:500}}>Team Total</td>
-                  <td style={{textAlign:"right",padding:"6px 6px",fontWeight:500,fontSize:"14px"}}>{tTotal(selT)}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-          <p style={{fontSize:"10px",color:"var(--color-text-tertiary)",marginTop:"6px"}}>Click any row to see full calculation</p>
-        </div>
-      )}
-
-      {/* JSON EXPORT */}
-      {view==="json"&&(
-        <div>
-          <div style={{display:"flex",gap:"8px",alignItems:"center",marginBottom:"10px"}}>
-            <button onClick={copyJSON} style={{padding:"7px 16px",fontSize:"13px",cursor:"pointer",
-              borderRadius:"var(--border-radius-md)",border:"0.5px solid var(--color-border-primary)",
-              background:"var(--color-background-secondary)",color:"var(--color-text-primary)",fontWeight:500}}>
-              {copied?"✅ Copied!":"📋 Copy JSON for GitHub"}
-            </button>
-          </div>
-          <p style={{fontSize:"11px",color:"var(--color-text-secondary)",marginBottom:"8px"}}>
-            Paste into your GitHub repo's <code style={{fontSize:"11px"}}>data.json</code> and commit. Teams ranked by total points.
-          </p>
-          <div style={{background:"var(--color-background-secondary)",borderRadius:"var(--border-radius-md)",padding:"12px",overflowX:"auto",maxHeight:"420px",overflowY:"auto"}}>
-            <pre style={{fontSize:"10px",margin:0,whiteSpace:"pre-wrap",wordBreak:"break-word",color:"var(--color-text-primary)",lineHeight:"1.5"}}>
-              {buildJSON()}
-            </pre>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+{
+  "lastUpdated": "2026-03-31T07:36:09.509Z",
+  "scoringSystem": "Dream11 T20",
+  "matches": [
+    "RCB vs SRH (28 Mar)",
+    "MI vs KKR (29 Mar)",
+    "RR vs CSK (30 Mar)"
+  ],
+  "teams": [
+    {
+      "teamId": "T2",
+      "teamName": "T2 Smatish & Swapnesh",
+      "captain": "Ishan Kishan",
+      "viceCaptain": "Axar Patel",
+      "totalPoints": 799,
+      "players": [
+        {
+          "name": "Ishan Kishan",
+          "role": "Captain",
+          "multiplier": 2,
+          "M1_base": 176,
+          "M1_pts": 352,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 352
+        },
+        {
+          "name": "Rohit Sharma",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 160,
+          "M2_pts": 160,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 160
+        },
+        {
+          "name": "Ajinkya Rahane",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 125,
+          "M2_pts": 125,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 125
+        },
+        {
+          "name": "Jofra Archer",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 95,
+          "M3_pts": 95,
+          "totalPoints": 95
+        },
+        {
+          "name": "Bhuvneshwar Kumar",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 43,
+          "M1_pts": 43,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 43
+        },
+        {
+          "name": "Shivam Dube",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 16,
+          "M3_pts": 16,
+          "totalPoints": 16
+        },
+        {
+          "name": "Jasprit Bumrah",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 8,
+          "M2_pts": 8,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 8
+        },
+        {
+          "name": "Axar Patel",
+          "role": "Vice Captain",
+          "multiplier": 1.5,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Jacob Bethell",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Will Jacks",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Ashwani Kumar",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        }
+      ]
+    },
+    {
+      "teamId": "T5",
+      "teamName": "T5 Rahul & Sahil M",
+      "captain": "Virat Kohli",
+      "viceCaptain": "Sai Sudharsan",
+      "totalPoints": 453,
+      "players": [
+        {
+          "name": "Virat Kohli",
+          "role": "Captain",
+          "multiplier": 2,
+          "M1_base": 145,
+          "M1_pts": 290,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 290
+        },
+        {
+          "name": "Ravindra Jadeja",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 85,
+          "M3_pts": 85,
+          "totalPoints": 85
+        },
+        {
+          "name": "Suryakumar Yadav",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 32,
+          "M2_pts": 32,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 32
+        },
+        {
+          "name": "Riyan Parag",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 28,
+          "M3_pts": 28,
+          "totalPoints": 28
+        },
+        {
+          "name": "Khaleel Ahmed",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 18,
+          "M3_pts": 18,
+          "totalPoints": 18
+        },
+        {
+          "name": "Sai Sudharsan",
+          "role": "Vice Captain",
+          "multiplier": 1.5,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Josh Hazlewood",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Marcus Stoinis",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Mukesh Kumar",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Digvesh Singh Rathi",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Karun Nair",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        }
+      ]
+    },
+    {
+      "teamId": "T6",
+      "teamName": "T6 Sanidhya & Aashish & Sahil Tagra",
+      "captain": "Cameron Green",
+      "viceCaptain": "Sanju Samson",
+      "totalPoints": 434,
+      "players": [
+        {
+          "name": "Ryan Rickelton",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 167,
+          "M2_pts": 167,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 167
+        },
+        {
+          "name": "Romario Shepherd",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 97,
+          "M1_pts": 97,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 97
+        },
+        {
+          "name": "Cameron Green",
+          "role": "Captain",
+          "multiplier": 2,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 38,
+          "M2_pts": 76,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 76
+        },
+        {
+          "name": "Heinrich Klaasen",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 71,
+          "M1_pts": 71,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 71
+        },
+        {
+          "name": "Sanju Samson",
+          "role": "Vice Captain",
+          "multiplier": 1.5,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 14,
+          "M3_pts": 21,
+          "totalPoints": 21
+        },
+        {
+          "name": "Ayush Mhatre",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 2,
+          "M3_pts": 2,
+          "totalPoints": 2
+        },
+        {
+          "name": "Kagiso Rabada",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Tristan Stubbs",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Krunal Pandya",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Washington Sundar",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        }
+      ]
+    },
+    {
+      "teamId": "T1",
+      "teamName": "T1 Nishant & Mainak",
+      "captain": "Finn Allen",
+      "viceCaptain": "Hardik Pandya",
+      "totalPoints": 371,
+      "players": [
+        {
+          "name": "Finn Allen",
+          "role": "Captain",
+          "multiplier": 2,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 87,
+          "M2_pts": 174,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 174
+        },
+        {
+          "name": "Hardik Pandya",
+          "role": "Vice Captain",
+          "multiplier": 1.5,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 77,
+          "M2_pts": 116,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 116
+        },
+        {
+          "name": "Sunil Narine",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 40,
+          "M2_pts": 40,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 40
+        },
+        {
+          "name": "Vaibhav Arora",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 36,
+          "M2_pts": 36,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 36
+        },
+        {
+          "name": "Varun Chakaravarthy",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 5,
+          "M2_pts": 5,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 5
+        },
+        {
+          "name": "Mohammed Siraj",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Quinton de Kock",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Marco Jansen",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Kuldeep Yadav",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Prasidh Krishna",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Priyansh Arya",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        }
+      ]
+    },
+    {
+      "teamId": "T8",
+      "teamName": "T8 Abhishek & Jitesh & Girish",
+      "captain": "Travis Head",
+      "viceCaptain": "Vaibhav Sooryavanshi",
+      "totalPoints": 293,
+      "players": [
+        {
+          "name": "Vaibhav Sooryavanshi",
+          "role": "Vice Captain",
+          "multiplier": 1.5,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 116,
+          "M3_pts": 174,
+          "totalPoints": 174
+        },
+        {
+          "name": "Travis Head",
+          "role": "Captain",
+          "multiplier": 2,
+          "M1_base": 23,
+          "M1_pts": 46,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 46
+        },
+        {
+          "name": "Tilak Varma",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 42,
+          "M2_pts": 42,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 42
+        },
+        {
+          "name": "Trent Boult",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 11,
+          "M2_pts": 11,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 11
+        },
+        {
+          "name": "Shimron Hetmyer",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 10,
+          "M3_pts": 10,
+          "totalPoints": 10
+        },
+        {
+          "name": "Jitesh Sharma",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 10,
+          "M1_pts": 10,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 10
+        },
+        {
+          "name": "Arshdeep Singh",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Rashid Khan",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Jos Buttler",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Mitchell Santner",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Nehal Wadhera",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        }
+      ]
+    },
+    {
+      "teamId": "T7",
+      "teamName": "T7 Ishaan & Mohit & Harshank",
+      "captain": "Shreyas Iyer",
+      "viceCaptain": "Mitchell Marsh",
+      "totalPoints": 255,
+      "players": [
+        {
+          "name": "Devdutt Padikkal",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 159,
+          "M1_pts": 159,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 159
+        },
+        {
+          "name": "Ravi Bishnoi",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 46,
+          "M3_pts": 46,
+          "totalPoints": 46
+        },
+        {
+          "name": "Philip Salt",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 36,
+          "M1_pts": 36,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 36
+        },
+        {
+          "name": "Matt Henry",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 9,
+          "M3_pts": 9,
+          "totalPoints": 9
+        },
+        {
+          "name": "Noor Ahmad",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 5,
+          "M3_pts": 5,
+          "totalPoints": 5
+        },
+        {
+          "name": "Mitchell Marsh",
+          "role": "Vice Captain",
+          "multiplier": 1.5,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Nicholas Pooran",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Shreyas Iyer",
+          "role": "Captain",
+          "multiplier": 2,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Yuzvendra Chahal",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Abishek Porel",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Shashank Singh",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        }
+      ]
+    },
+    {
+      "teamId": "T3",
+      "teamName": "T3 Dhruv & Vishal",
+      "captain": "Shubman Gill",
+      "viceCaptain": "Yashasvi Jaiswal",
+      "totalPoints": 240,
+      "players": [
+        {
+          "name": "Yashasvi Jaiswal",
+          "role": "Vice Captain",
+          "multiplier": 1.5,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 72,
+          "M3_pts": 108,
+          "totalPoints": 108
+        },
+        {
+          "name": "Angkrish Raghuvanshi",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 105,
+          "M2_pts": 105,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 105
+        },
+        {
+          "name": "Abhishek Sharma",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 17,
+          "M1_pts": 17,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 17
+        },
+        {
+          "name": "Nitish Kumar Reddy",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 10,
+          "M1_pts": 10,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 10
+        },
+        {
+          "name": "Mohammed Shami",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Avesh Khan",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Harshal Patel",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Pathum Nissanka",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Azmatullah Omarzai",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "T Natarajan",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Shubman Gill",
+          "role": "Captain",
+          "multiplier": 2,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        }
+      ]
+    },
+    {
+      "teamId": "T4",
+      "teamName": "T4 Arif & Shailesh",
+      "captain": "KL Rahul",
+      "viceCaptain": "Ruturaj Gaikwad",
+      "totalPoints": 209,
+      "players": [
+        {
+          "name": "Rinku Singh",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 61,
+          "M2_pts": 61,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 61
+        },
+        {
+          "name": "Dhruv Jurel",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 54,
+          "M3_pts": 54,
+          "totalPoints": 54
+        },
+        {
+          "name": "Harsh Dubey",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 45,
+          "M1_pts": 45,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 45
+        },
+        {
+          "name": "Tim David",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 34,
+          "M1_pts": 34,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 34
+        },
+        {
+          "name": "Ruturaj Gaikwad",
+          "role": "Vice Captain",
+          "multiplier": 1.5,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 10,
+          "M3_pts": 15,
+          "totalPoints": 15
+        },
+        {
+          "name": "KL Rahul",
+          "role": "Captain",
+          "multiplier": 2,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Aiden Markram",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Rishabh Pant",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Dewald Brevis",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Prabhsimran Singh",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        },
+        {
+          "name": "Jason Holder",
+          "role": "Player",
+          "multiplier": 1,
+          "M1_base": 0,
+          "M1_pts": 0,
+          "M2_base": 0,
+          "M2_pts": 0,
+          "M3_base": 0,
+          "M3_pts": 0,
+          "totalPoints": 0
+        }
+      ]
+    }
+  ]
 }
