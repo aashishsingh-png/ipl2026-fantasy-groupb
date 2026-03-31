@@ -535,6 +535,15 @@ def main():
             # Not in this match — leave as null (preserves previous data untouched)
             skipped.append(squad_name)
 
+    # Safety check: don't mark done if too few players found (match may be live/incomplete)
+    MIN_PLAYERS_REQUIRED = 5
+    if updated_count < MIN_PLAYERS_REQUIRED:
+        print(f"\n  ⚠️  Only {updated_count} players found — match may still be live or ESPN data incomplete.")
+        print(f"     NOT marking match as done. Re-run after the match finishes.")
+        print(f"     (Requires at least {MIN_PLAYERS_REQUIRED} players to mark done)")
+        if not args.dry_run:
+            sys.exit(0)  # Exit cleanly without pushing anything
+
     # Mark match as done
     current_json["matches"][target_mi]["done"] = True
     current_json["lastUpdated"] = datetime.now().strftime("%Y-%m-%d %H:%M")
