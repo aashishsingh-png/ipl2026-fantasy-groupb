@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-31 17:05",
+  "lastUpdated": "2026-03-31 17:12",
   "matches": [
     {
       "id": 0,
@@ -206,7 +206,25 @@
       "m0": null,
       "m1": null,
       "m2": null,
-      "m3": null,
+      "m3": {
+        "runs": 0,
+        "balls": 0,
+        "fours": 0,
+        "sixes": 0,
+        "duck": false,
+        "wickets": 1,
+        "blbw": 0,
+        "dots": 4,
+        "maidens": 0,
+        "overs": 0.5,
+        "runs_conceded": 2,
+        "catches": 0,
+        "stumpings": 0,
+        "rod": 0,
+        "roi": 0,
+        "lineup": true,
+        "impact": false
+      },
       "m4": null
     },
     "Priyansh Arya": {
@@ -513,17 +531,17 @@
       "m1": null,
       "m2": null,
       "m3": {
-        "runs": 0,
-        "balls": 1,
-        "fours": 6,
-        "sixes": 0,
+        "runs": 4,
+        "balls": 0,
+        "fours": 29,
+        "sixes": 1,
         "duck": false,
         "wickets": 1,
         "blbw": 0,
         "dots": 10,
         "maidens": 0,
-        "overs": 3.5,
-        "runs_conceded": 27,
+        "overs": 4.0,
+        "runs_conceded": 29,
         "catches": 0,
         "stumpings": 0,
         "rod": 0,
