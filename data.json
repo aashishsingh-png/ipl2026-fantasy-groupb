@@ -1190,13 +1190,31 @@
       "m3": null,
       "m4": null
     },
-    "Noor Ahmad": {
-      "m0": null,
-      "m1": null,
-      "m2": null,
-      "m3": null,
-      "m4": null
-    },
+   "Noor Ahmad": {
+  "m0": null,
+  "m1": null,
+  "m2": { 
+    "runs": 1, 
+    "balls": 9, 
+    "fours": 0, 
+    "sixes": 0, 
+    "duck": false, 
+    "wickets": 0, 
+    "blbw": 0, 
+    "dots": 4, 
+    "maidens": 0, 
+    "overs": 2, 
+    "runs_conceded": 24, 
+    "catches": 0, 
+    "stumpings": 0, 
+    "rod": 0, 
+    "roi": 0, 
+    "lineup": true, 
+    "impact": false 
+  },
+  "m3": null, 
+  "m4": null
+},,
     "Matt Henry": {
       "m0": null,
       "m1": null,
