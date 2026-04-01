@@ -1788,5 +1788,103 @@
       },
       "m4": null
     }
+  },
+  "ytpReasons": {
+    "Quinton de Kock": {
+      "m1": "KKR \u2014 not selected for Match 2 (MI vs KKR)"
+    },
+    "Kuldeep Yadav": {
+      "m1": "KKR \u2014 not selected for Match 2 (MI vs KKR)"
+    },
+    "Axar Patel": {
+      "m1": "MI \u2014 not selected for Match 2 (MI vs KKR)"
+    },
+    "Jacob Bethell": {
+      "m1": "MI \u2014 not selected for Match 2 (MI vs KKR)"
+    },
+    "Will Jacks": {
+      "m1": "MI \u2014 not selected for Match 2 (MI vs KKR)"
+    },
+    "Ashwani Kumar": {
+      "m1": "MI \u2014 not selected for Match 2 (MI vs KKR)"
+    },
+    "Mohammed Shami": {
+      "m3": "GT \u2014 not selected for Match 4 (PBKS vs GT)"
+    },
+    "Avesh Khan": {
+      "m3": "GT \u2014 not selected for Match 4 (PBKS vs GT)"
+    },
+    "Pathum Nissanka": {
+      "m3": "GT \u2014 not selected for Match 4 (PBKS vs GT)"
+    },
+    "T Natarajan": {
+      "m3": "GT \u2014 not selected for Match 4 (PBKS vs GT)"
+    },
+    "Jason Holder": {
+      "m3": "GT \u2014 not selected for Match 4 (PBKS vs GT)"
+    },
+    "Azmatullah Omarzai": {
+      "m3": "PBKS \u2014 not selected for Match 4 (PBKS vs GT)"
+    },
+    "Karun Nair": {
+      "m3": "PBKS \u2014 not selected for Match 4 (PBKS vs GT)"
+    },
+    "Dewald Brevis": {
+      "m2": "CSK \u2014 injured/unavailable for Match 3 (RR vs CSK)"
+    },
+    "Tristan Stubbs": {
+      "m2": "CSK \u2014 not selected for Match 3 (RR vs CSK)"
+    },
+    "Mitchell Santner": {
+      "m2": "CSK \u2014 not selected for Match 3 (RR vs CSK)"
+    },
+    "Josh Hazlewood": {
+      "m0": "RCB \u2014 not selected for Match 1 (RCB vs SRH)"
+    },
+    "Abishek Porel": {
+      "m1": "KKR \u2014 not selected for Match 2 (MI vs KKR)"
+    },
+    "KL Rahul": {
+      "m0": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m1": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m2": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m3": "LSG \u2014 team yet to play (debut Match 5+)"
+    },
+    "Aiden Markram": {
+      "m0": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m1": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m2": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m3": "LSG \u2014 team yet to play (debut Match 5+)"
+    },
+    "Rishabh Pant": {
+      "m0": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m1": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m2": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m3": "LSG \u2014 team yet to play (debut Match 5+)"
+    },
+    "Nicholas Pooran": {
+      "m0": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m1": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m2": "LSG \u2014 team yet to play (debut Match 5+)",
+      "m3": "LSG \u2014 team yet to play (debut Match 5+)"
+    },
+    "Mitchell Marsh": {
+      "m0": "DC \u2014 team yet to play (debut Match 5+)",
+      "m1": "DC \u2014 team yet to play (debut Match 5+)",
+      "m2": "DC \u2014 team yet to play (debut Match 5+)",
+      "m3": "DC \u2014 team yet to play (debut Match 5+)"
+    },
+    "Mukesh Kumar": {
+      "m0": "DC \u2014 team yet to play (debut Match 5+)",
+      "m1": "DC \u2014 team yet to play (debut Match 5+)",
+      "m2": "DC \u2014 team yet to play (debut Match 5+)",
+      "m3": "DC \u2014 team yet to play (debut Match 5+)"
+    },
+    "Digvesh Singh Rathi": {
+      "m0": "DC \u2014 team yet to play (debut Match 5+)",
+      "m1": "DC \u2014 team yet to play (debut Match 5+)",
+      "m2": "DC \u2014 team yet to play (debut Match 5+)",
+      "m3": "DC \u2014 team yet to play (debut Match 5+)"
+    }
   }
 }
