@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>DST Leaderboard</title>
+<style>
+  :root{
+    --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f7f8fa;--text:#1a1d27;--muted:#6b7280;
+    --border:#e5e7eb;--gold:#d97706;--silver:#6b7280;--bronze:#92400e;
+    --accent:#2563eb;--accent-bg:#eff6ff;--accent-border:#bfdbfe;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+
+  /* HEADER */
+  .header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px #0000000a;}
+  .back-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;display:none;transition:background .15s;}
+  .back-btn:hover{background:var(--bg3);}
+  .back-btn.show{display:block;}
+  .header-title{flex:1;}
+  .header-title h1{font-size:17px;font-weight:700;color:var(--text);}
+  .header-title p{font-size:11px;color:var(--muted);margin-top:1px;}
+  .updated-badge{font-size:10px;padding:3px 9px;border-radius:20px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);white-space:nowrap;}
+
+  /* LOADING */
+  .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:12px;color:var(--muted);}
+  .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* PODIUM */
+  .podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:18px 16px 10px;}
+  .pod{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 1px 3px #0000000a;}
+  .pod:hover{transform:translateY(-3px);box-shadow:0 4px 12px #00000014;}
+  .pod.r1{border-color:#fbbf24;background:#fffbeb;}
+  .pod.r2{border-color:#d1d5db;background:#f9fafb;}
+  .pod.r3{border-color:#d97706;background:#fffbeb;}
+  .pod-medal{font-size:24px;margin-bottom:5px;}
+  .pod-name{font-size:11px;font-weight:600;margin-bottom:3px;line-height:1.3;}
+  .pod-pts{font-size:21px;font-weight:700;}
+  .pod-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+  /* HOME LIST */
+  .section{padding:4px 16px 20px;}
+  .sec-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:10px;}
+  .sq-row{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;align-items:center;gap:11px;box-shadow:0 1px 3px #0000000a;}
+  .sq-row:hover{box-shadow:0 4px 12px #00000014;border-color:#d1d5db;}
+  .sq-rank{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;}
+  .sq-info{flex:1;min-width:0;}
+  .sq-name{font-size:14px;font-weight:600;}
+  .sq-tags{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
+  .tag{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid;}
+  .sq-bar-wrap{width:100%;background:var(--border);border-radius:3px;height:3px;margin-top:7px;overflow:hidden;}
+  .sq-bar{height:100%;border-radius:3px;}
+  .sq-mpts{display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;}
+  .mchip{font-size:11px;color:var(--muted);}
+  .mchip strong{color:var(--text);}
+  .sq-pts{text-align:right;flex-shrink:0;}
+  .sq-pts-val{font-size:21px;font-weight:700;}
+  .sq-pts-lbl{font-size:10px;color:var(--muted);}
+
+  /* DETAIL VIEW */
+  #vDetail{display:none;}
+  .d-hero{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 16px 14px;box-shadow:0 1px 3px #0000000a;}
+  .d-hero-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .d-avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0;}
+  .d-squad-name{font-size:19px;font-weight:700;}
+  .d-owner{font-size:12px;color:var(--muted);margin-top:2px;}
+  .d-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .stat{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px;text-align:center;}
+  .stat-v{font-size:19px;font-weight:700;}
+  .stat-l{font-size:10px;color:var(--muted);margin-top:2px;}
+
+  /* TABS */
+  .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;background:var(--bg2);}
+  .tb{background:none;border:none;color:var(--muted);padding:9px 13px;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s;}
+  .tb.act{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+  .tb:hover:not(.act){color:var(--text);}
+
+  /* PLAYER TABLE */
+  .ptable{width:100%;border-collapse:collapse;}
+  .ptable th{font-size:10px;color:var(--muted);text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-weight:600;background:var(--bg3);}
+  .ptable th.r{text-align:right;}
+  .ptable td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;background:var(--bg2);}
+  .ptable tr:last-child td{border-bottom:none;}
+  .ptable tr:hover td{background:var(--bg3);}
+  .pname{display:flex;align-items:center;gap:6px;}
+  .rtag{font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600;}
+  .rc{background:#fef3c7;color:#d97706;border:1px solid #fcd34d;}
+  .rvc{background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;}
+  .ris{background:#dcfce7;color:#16a34a;border:1px solid #86efac;}
+  .tr{text-align:right;}
+  .c-pos{color:#16a34a;font-weight:600;}
+  .c-neg{color:#dc2626;font-weight:600;}
+  .c-muted{color:var(--muted);font-size:12px;}
+
+  /* CLICKABLE PTS CELL */
+  .pts-clickable{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;}
+  .pts-clickable:hover{opacity:0.75;}
+
+  /* MATCH SUMMARY BAR */
+  .m-summary{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin:14px 16px 12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px #0000000a;}
+  .m-summary-info{font-size:12px;color:var(--muted);}
+  .m-summary-pts{font-size:26px;font-weight:700;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:#0000006e;z-index:500;display:flex;align-items:flex-end;justify-content:center;}
+  .modal{background:var(--bg2);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:20px 20px 36px;}
+  .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+  .modal-title{font-size:16px;font-weight:700;margin-bottom:2px;}
+  .modal-sub{font-size:12px;color:var(--muted);margin-bottom:16px;}
+  .sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+  .sc-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+  .sc-card-label{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  .sc-card-val{font-size:18px;font-weight:700;}
+  .pts-breakdown{border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .pts-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;}
+  .pts-row:last-child{border-bottom:none;}
+  .pts-row.total{font-weight:700;font-size:13px;background:var(--bg3);}
+  .pts-row-label{color:var(--muted);}
+  .pts-row-val{font-weight:600;}
+  .pts-row-val.pos{color:#16a34a;}
+  .pts-row-val.neg{color:#dc2626;}
+  .pts-row-val.neu{color:var(--text);}
+  .modal-close{width:100%;margin-top:14px;padding:11px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);transition:background .15s;}
+  .modal-close:hover{background:var(--border);}
+
+  @media(max-width:480px){
+    .podium{gap:7px;padding:14px 12px 8px;}
+    .pod-pts{font-size:18px;}
+    .pod-name{font-size:10px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="back-btn" id="backBtn" onclick="goHome()">← Back</button>
+  <div class="header-title">
+    <h1 id="hTitle">DST Leaderboard</h1>
+    <p id="hSub">Private League · 8 Teams · Dream11 T20 Rules</p>
+  </div>
+  <span class="updated-badge" id="updBadge">Loading…</span>
+</div>
+
+<div id="vHome">
+  <div class="loading" id="loadingEl">
+    <div class="spinner"></div>
+    <div>Fetching latest scores from Google Sheets…</div>
+  </div>
+  <div id="homeContent" style="display:none">
+    <div class="podium" id="podium"></div>
+    <div class="section">
+      <div class="sec-title">All Squads — tap to explore</div>
+      <div id="sqList"></div>
+    </div>
+  </div>
+</div>
+
+<div id="vDetail">
+  <div class="d-hero" id="dHero"></div>
+  <div class="tabs" id="dTabs"></div>
+  <div id="dBody" style="padding:0 16px 40px"></div>
+</div>
+
+<!-- PLAYER SCORECARD MODAL -->
+<div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div class="sc-grid" id="modalStats"></div>
+    <div class="pts-breakdown" id="modalBreakdown"></div>
+    <button class="modal-close" onclick="closeModalBtn()">Close</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// GOOGLE SHEETS CONFIGURATION
+// ══════════════════════════════════════════════════════════════════════════════
+const SHEET_ID = '1BQyrCNM7d9wEw5LNKIwm8ZXfNN3JhPR3rrUOlq3I8zs';
+const SHEET_GID = '0'; // This is the gid from your sheet URL (gid=0)
+
+// ── SQUADS ────────────────────────────────────────────────────────────────────
+const SQUADS = {
+  "T1 Nishant & Mainak": {
+    color:"#3b82f6", C:"Finn Allen", VC:"Hardik Pandya", owner:"Nishant & Mainak",
+    players:["Mohammed Siraj","Quinton de Kock","Marco Jansen","Varun Chakaravarthy","Kuldeep Yadav","Sunil Narine","Hardik Pandya","Finn Allen","Prasidh Krishna","Priyansh Arya","Vaibhav Arora"]
+  },
+  "T2 Smatish & Swapnesh": {
+    color:"#16a34a", C:"Ishan Kishan", VC:"Axar Patel", owner:"Smatish & Swapnesh",
+    players:["Bhuvneshwar Kumar","Ishan Kishan","Rohit Sharma","Jofra Archer","Jasprit Bumrah","Shivam Dube","Ajinkya Rahane","Axar Patel","Jacob Bethell","Will Jacks","Ashwani Kumar"]
+  },
+  "T3 Dhruv & Vishal": {
+    color:"#ea580c", C:"Shubman Gill", VC:"Yashasvi Jaiswal", owner:"Dhruv & Vishal",
+    players:["Shubman Gill","Abhishek Sharma","Yashasvi Jaiswal","Mohammed Shami","Avesh Khan","Nitish Kumar Reddy","Angkrish Raghuvanshi","Harshal Patel","Pathum Nissanka","Azmatullah Omarzai","T Natarajan"]
+  },
+  "T4 Arif & Shailesh": {
+    color:"#db2777", C:"KL Rahul", VC:"Ruturaj Gaikwad", owner:"Arif & Shailesh",
+    players:["Rinku Singh","KL Rahul","Aiden Markram","Rishabh Pant","Ruturaj Gaikwad","Dewald Brevis","Tim David","Dhruv Jurel","Prabhsimran Singh","Jason Holder","Harsh Dubey"]
+  },
+  "T5 Rahul & Sahil M": {
+    color:"#9333ea", C:"Virat Kohli", VC:"Sai Sudharsan", owner:"Rahul & Sahil M",
+    players:["Riyan Parag","Ravindra Jadeja","Sai Sudharsan","Virat Kohli","Josh Hazlewood","Suryakumar Yadav","Marcus Stoinis","Mukesh Kumar","Digvesh Singh Rathi","Karun Nair","Khaleel Ahmed"]
+  },
+  "T6 Sanidhya & Aashish & Sahil Tagra": {
+    color:"#0891b2", C:"Cameron Green", VC:"Sanju Samson", owner:"Sanidhya & Aashish & Sahil Tagra",
+    players:["Heinrich Klaasen","Rajat Patidar","Sanju Samson","Cameron Green","Kagiso Rabada","Tristan Stubbs","Krunal Pandya","Ryan Rickelton","Ayush Mhatre","Romario Shepherd","Washington Sundar"]
+  },
+  "T7 Ishaan & Mohit & Harshank": {
+    color:"#d97706", C:"Shreyas Iyer", VC:"Mitchell Marsh", owner:"Ishaan & Mohit & Harshank",
+    players:["Mitchell Marsh","Nicholas Pooran","Shreyas Iyer","Philip Salt","Yuzvendra Chahal","Ravi Bishnoi","Noor Ahmad","Matt Henry","Abishek Porel","Devdutt Padikkal","Shashank Singh"]
+  },
+  "T8 Abhishek & Jitesh & Girish": {
+    color:"#dc2626", C:"Travis Head", VC:"Vaibhav Sooryavanshi", owner:"Abhishek & Jitesh & Girish",
+    players:["Vaibhav Sooryavanshi","Tilak Varma","Arshdeep Singh","Rashid Khan","Jos Buttler","Shimron Hetmyer","Travis Head","Jitesh Sharma","Trent Boult","Mitchell Santner","Nehal Wadhera"]
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GOOGLE SHEETS DATA FETCHER
+// ══════════════════════════════════════════════════════════════════════════════
+let SHEET_DATA = null;
+
+async function fetchSheetData() {
+  // Using the export URL which has better CORS support
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
+  
+  try {
+    console.log('🔄 Fetching from Google Sheets...');
+    console.log('📍 URL:', url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const csvText = await response.text();
+    console.log('✅ Fetched', csvText.length, 'characters');
+    
+    return parseSheetData(csvText);
+  } catch (error) {
+    console.error('❌ Error fetching sheet:', error);
+    console.error('💡 Make sure your sheet is publicly accessible (Anyone with the link can view)');
+    throw error;
+  }
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function parseNum(val) {
+  if (!val || val === '' || val === 'null') return null;
+  const num = parseFloat(val);
+  return isNaN(num) ? null : num;
+}
+
+function parseSheetData(csvText) {
+  const lines = csvText.split('\n').filter(l => l.trim());
+  const headers = parseCSVLine(lines[0]);
+  
+  console.log('📊 Headers:', headers);
+  
+  // Find column indices
+  const cols = {
+    playerName: headers.findIndex(h => h.toLowerCase().includes('player')),
+    squadName: headers.findIndex(h => h.toLowerCase().includes('squad')),
+    playerType: headers.findIndex(h => h.toLowerCase().includes('type')),
+    matchNo: headers.findIndex(h => h.toLowerCase().includes('match no')),
+    matchName: headers.findIndex(h => h.toLowerCase().includes('match name')),
+    startingXI: headers.findIndex(h => h.toLowerCase().includes('starting')),
+    runs: headers.findIndex(h => h.toLowerCase() === 'runs'),
+    inningsNo: headers.findIndex(h => h.toLowerCase().includes('innings')),
+    fours: headers.findIndex(h => h.toLowerCase() === 'fours'),
+    sixs: headers.findIndex(h => h.toLowerCase().includes('six')),
+    strikeRate: headers.findIndex(h => h.toLowerCase().includes('strike rate')),
+    bonus25: headers.findIndex(h => h.includes('25/50/75/100') || h.includes('Run Bonus')),
+    negative: headers.findIndex(h => h.toLowerCase() === 'negative'),
+    catchTaken: headers.findIndex(h => h.toLowerCase().includes('catch taken')),
+    catchBonus: headers.findIndex(h => h.toLowerCase().includes('catch bonus')),
+    runoutStumping: headers.findIndex(h => h.toLowerCase().includes('runout') || h.toLowerCase().includes('stumping')),
+    dotBalls: headers.findIndex(h => h.toLowerCase().includes('dot balls')),
+    wickets: headers.findIndex(h => h.toLowerCase() === 'wickets'),
+    lbwBowled: headers.findIndex(h => h.toLowerCase().includes('lbw')),
+    maidenOver: headers.findIndex(h => h.toLowerCase().includes('maiden')),
+    economy: headers.findIndex(h => h.toLowerCase() === 'economy'),
+    bonusPoints: headers.findIndex(h => h.toLowerCase().includes('bonus points')),
+    totalPoints: headers.findIndex(h => h.toLowerCase().includes('total points'))
+  };
+  
+  // Group data by player and match
+  const playerData = {};
+  const matchSet = new Set();
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    const playerName = values[cols.playerName];
+    const matchNo = values[cols.matchNo];
+    const matchName = values[cols.matchName];
+    
+    if (!playerName || !matchNo) continue;
+    
+    matchSet.add(JSON.stringify({ no: matchNo, name: matchName }));
+    
+    if (!playerData[playerName]) {
+      playerData[playerName] = { matches: {} };
+    }
+    
+    playerData[playerName].matches[matchNo] = {
+      matchName: matchName || '',
+      totalPoints: parseNum(values[cols.totalPoints]),
+      stats: {
+        startingXI: values[cols.startingXI] || '',
+        runs: parseNum(values[cols.runs]),
+        balls: null, // Not in sheet, will calculate SR differently
+        fours: parseNum(values[cols.fours]),
+        sixs: parseNum(values[cols.sixs]),
+        strikeRate: parseNum(values[cols.strikeRate]),
+        wickets: parseNum(values[cols.wickets]),
+        overs: null, // Not in sheet directly
+        runs_conceded: null,
+        economy: parseNum(values[cols.economy]),
+        dotBalls: parseNum(values[cols.dotBalls]),
+        maidenOver: parseNum(values[cols.maidenOver]),
+        catchTaken: parseNum(values[cols.catchTaken]),
+        runoutStumping: parseNum(values[cols.runoutStumping]),
+        negative: parseNum(values[cols.negative]),
+        bonusPoints: parseNum(values[cols.bonusPoints]),
+        bonus25: parseNum(values[cols.bonus25]),
+        lbwBowled: parseNum(values[cols.lbwBowled])
+      }
+    };
+  }
+  
+  // Extract unique matches
+  const matches = Array.from(matchSet)
+    .map(m => JSON.parse(m))
+    .sort((a, b) => {
+      const aNum = parseInt(a.no) || 0;
+      const bNum = parseInt(b.no) || 0;
+      return aNum - bNum;
+    });
+  
+  console.log(`✅ Loaded ${Object.keys(playerData).length} players, ${matches.length} matches`);
+  
+  return {
+    lastUpdated: new Date().toLocaleString('en-IN', { 
+      day: '2-digit', 
+      month: 'short', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    }),
+    matches: matches,
+    players: playerData
+  };
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let DATA=null, currentSq=null, currentTab=0;
+
+// ── FETCH ─────────────────────────────────────────────────────────────────────
+async function loadData(){
+  try{
+    DATA = await fetchSheetData();
+    SHEET_DATA = DATA; // Store for reference
+    document.getElementById("updBadge").textContent="Updated " + DATA.lastUpdated;
+    renderHome();
+  }catch(e){
+    console.error(e);
+    document.getElementById("loadingEl").innerHTML=`<div style="color:#dc2626;text-align:center;padding:20px">Failed to load data from Google Sheets.<br><small>Please check your sheet is publicly accessible.</small></div>`;
+  }
+}
+
+// ── POINTS HELPERS ────────────────────────────────────────────────────────────
+function getPlayerMatchData(player, matchNo) {
+  if (!DATA.players[player]) return null;
+  return DATA.players[player].matches[matchNo] || null;
+}
+
+function getMatchPoints(player, matchNo) {
+  const data = getPlayerMatchData(player, matchNo);
+  return data ? data.totalPoints : null;
+}
+
+function applyRole(points, player, sqName){
+  if(points === null) return null;
+  const sq = SQUADS[sqName];
+  if(player === sq.C) return Math.round(points * 2);
+  if(player === sq.VC) return Math.round(points * 1.5);
+  return points;
+}
+
+function sqMatchTotal(sqName, matchNo){
+  const match = DATA.matches.find(m => m.no === matchNo);
+  if (!match) return 0;
+  
+  return SQUADS[sqName].players.reduce((sum, p) => {
+    const pts = getMatchPoints(p, matchNo);
+    const final = applyRole(pts, p, sqName);
+    return sum + (final ?? 0);
+  }, 0);
+}
+
+function sqTotal(sqName){
+  return DATA.matches.reduce((sum, match) => {
+    return sum + sqMatchTotal(sqName, match.no);
+  }, 0);
+}
+
+function ranked(){
+  return Object.keys(SQUADS).map(sq => ({sq, total: sqTotal(sq)})).sort((a,b) => b.total - a.total);
+}
+
+// ── HOME ──────────────────────────────────────────────────────────────────────
+function renderHome(){
+  document.getElementById("loadingEl").style.display="none";
+  document.getElementById("homeContent").style.display="block";
+  const r = ranked(), max = r[0]?.total || 1;
+  const medals = ["🥇","🥈","🥉"], rc = ["r1","r2","r3"];
+
+  document.getElementById("podium").innerHTML = r.slice(0,3).map(({sq,total},i) => {
+    const c = SQUADS[sq].color;
+    return `<div class="pod ${rc[i]}" onclick="goDetail('${sq}')" style="${i===0?'border-color:'+c:''}">
+      <div class="pod-medal">${medals[i]}</div>
+      <div class="pod-name" style="color:${c}">${sq}</div>
+      <div class="pod-pts" style="color:${c}">${total}</div>
+      <div class="pod-sub">${SQUADS[sq].owner}</div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("sqList").innerHTML = r.map(({sq,total},i) => {
+    const c = SQUADS[sq].color, pct = Math.round((total/max)*100);
+    const mpts = DATA.matches.map(m => 
+      `<span class="mchip">${m.name || 'Match ' + m.no}: <strong>${sqMatchTotal(sq, m.no)}</strong></span>`
+    ).join("");
+    return `<div class="sq-row" onclick="goDetail('${sq}')">
+      <div class="sq-rank" style="background:${c}18;color:${c};border:1px solid ${c}33">${i+1}</div>
+      <div class="sq-info">
+        <div class="sq-name">${sq}</div>
+        <div class="sq-tags">
+          <span class="tag" style="color:${c};border-color:${c}33;background:${c}0f">C: ${SQUADS[sq].C}</span>
+          <span class="tag" style="color:${c};border-color:${c}33;background:${c}0f">VC: ${SQUADS[sq].VC}</span>
+          <span class="tag" style="color:var(--muted);border-color:var(--border);background:var(--bg3)">${SQUADS[sq].owner}</span>
+        </div>
+        <div class="sq-bar-wrap"><div class="sq-bar" style="width:${pct}%;background:${c}"></div></div>
+        <div class="sq-mpts">${mpts}</div>
+      </div>
+      <div class="sq-pts"><div class="sq-pts-val" style="color:${c}">${total}</div><div class="sq-pts-lbl">pts</div></div>
+    </div>`;
+  }).join("");
+}
+
+// ── DETAIL ────────────────────────────────────────────────────────────────────
+function goDetail(sqName){
+  currentSq = sqName; 
+  currentTab = 0;
+  const sq = SQUADS[sqName], c = sq.color;
+  const total = sqTotal(sqName);
+  const r = ranked(), rank = r.findIndex(x => x.sq === sqName) + 1;
+  const medals = ["🥇","🥈","🥉"];
+  const init = sqName.split(" ").map(w => w[0]).slice(0,2).join("");
+
+  document.getElementById("dHero").innerHTML = `
+    <div class="d-hero-top">
+      <div class="d-avatar" style="background:${c}18;color:${c};border:2px solid ${c}44">${init}</div>
+      <div>
+        <div class="d-squad-name">${rank<=3?medals[rank-1]+' ':''}<span style="color:${c}">${sqName}</span></div>
+        <div class="d-owner">${sq.owner} · Rank #${rank}</div>
+      </div>
+    </div>
+    <div class="d-stats">
+      <div class="stat"><div class="stat-v" style="color:${c}">${total}</div><div class="stat-l">Total pts</div></div>
+      ${DATA.matches.map(m => 
+        `<div class="stat"><div class="stat-v" style="color:var(--gold)">${sqMatchTotal(sqName, m.no)}</div><div class="stat-l">${m.name || 'M'+m.no}</div></div>`
+      ).join("")}
+    </div>`;
+
+  const tabLabels = ["Overall", ...DATA.matches.map(m => m.name || 'Match ' + m.no)];
+  document.getElementById("dTabs").innerHTML = tabLabels.map((l,i) =>
+    `<button class="tb ${i===0?'act':''}" onclick="switchTab(${i},this)">${l}</button>`
+  ).join("");
+
+  document.getElementById("vHome").style.display = "none";
+  document.getElementById("vDetail").style.display = "block";
+  document.getElementById("backBtn").classList.add("show");
+  document.getElementById("hTitle").textContent = sqName;
+  document.getElementById("hSub").textContent = sq.owner+" · "+sq.C+" (C) · "+sq.VC+" (VC)";
+  renderDetail(0);
+  window.scrollTo(0,0);
+}
+
+function goHome(){
+  document.getElementById("vHome").style.display = "block";
+  document.getElementById("vDetail").style.display = "none";
+  document.getElementById("backBtn").classList.remove("show");
+  document.getElementById("hTitle").textContent = "DST Leaderboard";
+  document.getElementById("hSub").textContent = "Private League · 8 Teams · Dream11 T20 Rules";
+}
+
+function switchTab(i, el){
+  currentTab = i;
+  document.querySelectorAll(".tb").forEach(b => b.classList.remove("act"));
+  el.classList.add("act");
+  renderDetail(i);
+}
+
+function renderDetail(ti){
+  const sq = SQUADS[currentSq], c = sq.color;
+  const body = document.getElementById("dBody");
+
+  if(ti === 0){
+    // Overall tab
+    const rows = sq.players.map(p => {
+      const matchPts = DATA.matches.map(m => {
+        const base = getMatchPoints(p, m.no);
+        return applyRole(base, p, currentSq);
+      });
+      const total = matchPts.reduce((s,v) => s + (v ?? 0), 0);
+      return {p, matchPts, total, isC: p===sq.C, isVC: p===sq.VC};
+    }).sort((a,b) => b.total - a.total);
+
+    body.innerHTML = `<table class="ptable" style="margin-top:8px">
+      <thead><tr>
+        <th>Player</th>
+        ${DATA.matches.map(m => `<th class="r">${(m.name || 'M'+m.no).split(' vs ')[0]}</th>`).join("")}
+        <th class="r">Total</th>
+      </tr></thead>
+      <tbody>${rows.map(({p, matchPts, total, isC, isVC}) => `
+        <tr>
+          <td><div class="pname">${p}${isC?'<span class="rtag rc">C×2</span>':''}${isVC?'<span class="rtag rvc">VC×1.5</span>':''}</div></td>
+          ${matchPts.map((v, idx) => {
+            const matchNo = DATA.matches[idx].no;
+            const hasData = getPlayerMatchData(p, matchNo) !== null;
+            return `<td class="tr ${v===null?'c-muted':v>0?'c-pos':v<0?'c-neg':''}">
+              ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
+            </td>`;
+          }).join("")}
+          <td class="tr" style="color:${total>0?c:'var(--muted)'};font-weight:600">${total||'—'}</td>
+        </tr>`).join("")}
+      </tbody></table>`;
+
+  } else {
+    // Match tab
+    const match = DATA.matches[ti - 1];
+    const matchTotal = sqMatchTotal(currentSq, match.no);
+    
+    const rows = sq.players.map(p => {
+      const base = getMatchPoints(p, match.no);
+      const final = applyRole(base, p, currentSq);
+      const hasData = getPlayerMatchData(p, match.no) !== null;
+      return {p, base, final, isC: p===sq.C, isVC: p===sq.VC, hasData};
+    }).sort((a,b) => (b.final ?? -999) - (a.final ?? -999));
+
+    body.innerHTML = `
+      <div class="m-summary">
+        <div>
+          <div style="font-size:13px;font-weight:600">${match.name || 'Match ' + match.no}</div>
+          <div class="m-summary-info">C=2× · VC=1.5× applied</div>
+        </div>
+        <div class="m-summary-pts" style="color:${c}">${matchTotal}</div>
+      </div>
+      <table class="ptable">
+        <thead><tr><th>Player</th><th class="r">Base</th><th class="r">Final</th></tr></thead>
+        <tbody>${rows.map(({p, base, final, isC, isVC, hasData}) => `
+          <tr>
+            <td><div class="pname">${p}
+              ${isC?'<span class="rtag rc">C×2</span>':''}
+              ${isVC?'<span class="rtag rvc">VC×1.5</span>':''}
+            </div></td>
+            <td class="tr ${base===null?'c-muted':''}">${base===null?'—':base}</td>
+            <td class="tr ${final===null?'c-muted':final>0?'c-pos':final<0?'c-neg':''}" style="${final!==null&&final>0?'color:'+c:''}">
+              ${final===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${match.no}')"`:''}>${final}</span>`}
+            </td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+  }
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function showModal(player, sqName, matchNo){
+  const matchData = getPlayerMatchData(player, matchNo);
+  if(!matchData) return;
+  
+  const match = DATA.matches.find(m => m.no === matchNo);
+  const stats = matchData.stats;
+  const sq = SQUADS[sqName];
+  const isC = player === sq.C;
+  const isVC = player === sq.VC;
+
+  document.getElementById("modalTitle").textContent = player;
+  document.getElementById("modalSub").textContent = (match.name || 'Match ' + matchNo);
+
+  // Build stats grid
+  const statCards = [];
+  if(stats.runs !== null) statCards.push({label: "Runs", val: stats.runs});
+  if(stats.fours > 0 || stats.sixs > 0) statCards.push({label: "4s / 6s", val: `${stats.fours || 0} / ${stats.sixs || 0}`});
+  if(stats.strikeRate !== null) statCards.push({label: "Strike Rate", val: stats.strikeRate.toFixed(1)});
+  if(stats.wickets !== null && stats.wickets > 0) statCards.push({label: "Wickets", val: stats.wickets});
+  if(stats.economy !== null) statCards.push({label: "Economy", val: stats.economy.toFixed(2)});
+  if(stats.dotBalls > 0) statCards.push({label: "Dot Balls", val: stats.dotBalls});
+  if(stats.catchTaken > 0) statCards.push({label: "Catches", val: stats.catchTaken});
+  if(stats.maidenOver > 0) statCards.push({label: "Maidens", val: stats.maidenOver});
+
+  document.getElementById("modalStats").innerHTML = statCards.map(s => `
+    <div class="sc-card">
+      <div class="sc-card-label">${s.label}</div>
+      <div class="sc-card-val">${s.val}</div>
+    </div>`).join("");
+
+  // Points breakdown
+  const breakdownRows = [];
+  const basePoints = matchData.totalPoints;
+  
+  // Show main contributing stats
+  if(stats.runs) breakdownRows.push({label: "Runs scored", val: stats.runs});
+  if(stats.fours) breakdownRows.push({label: `Boundaries (${stats.fours}×4)`, val: stats.fours * 4});
+  if(stats.sixs) breakdownRows.push({label: `Sixes (${stats.sixs}×6)`, val: stats.sixs * 6});
+  if(stats.bonus25) breakdownRows.push({label: "Milestone bonus", val: stats.bonus25});
+  if(stats.wickets) breakdownRows.push({label: `Wickets (${stats.wickets}×30)`, val: stats.wickets * 30});
+  if(stats.dotBalls) breakdownRows.push({label: "Dot balls", val: stats.dotBalls});
+  if(stats.catchTaken) breakdownRows.push({label: `Catches (${stats.catchTaken}×8)`, val: stats.catchTaken * 8});
+  if(stats.runoutStumping) breakdownRows.push({label: "Runout/Stumping", val: stats.runoutStumping * 12});
+  if(stats.maidenOver) breakdownRows.push({label: `Maiden overs (${stats.maidenOver}×12)`, val: stats.maidenOver * 12});
+  if(stats.bonusPoints) breakdownRows.push({label: "Bonus points", val: stats.bonusPoints});
+  if(stats.negative) breakdownRows.push({label: "Penalties", val: stats.negative});
+
+  const finalPoints = applyRole(basePoints, player, sqName);
+  const multiplier = isC ? 2 : isVC ? 1.5 : 1;
+
+  document.getElementById("modalBreakdown").innerHTML = 
+    breakdownRows.map(row => `
+      <div class="pts-row">
+        <span class="pts-row-label">${row.label}</span>
+        <span class="pts-row-val ${row.val>0?'pos':row.val<0?'neg':'neu'}">${row.val>0?'+':''}${row.val}</span>
+      </div>`).join("") +
+    `<div class="pts-row total">
+      <span class="pts-row-label">Base points</span>
+      <span class="pts-row-val neu">${basePoints}</span>
+    </div>` +
+    (multiplier > 1 ? `<div class="pts-row total" style="background:#eff6ff">
+      <span class="pts-row-label" style="color:var(--accent);font-weight:700">Final (${isC?'C ×2':'VC ×1.5'})</span>
+      <span class="pts-row-val pos" style="color:var(--accent)">${finalPoints}</span>
+    </div>` : '');
+
+  document.getElementById("modalOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal(e){
+  if(e.target === document.getElementById("modalOverlay")) closeModalBtn();
+}
+
+function closeModalBtn(){
+  document.getElementById("modalOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INITIALIZE
+// ══════════════════════════════════════════════════════════════════════════════
+loadData();
+
+// Data fetches only on page load - no auto-refresh
+// If you want auto-refresh, uncomment the line below:
+// setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>
