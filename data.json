@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-06 23:55",
+  "lastUpdated": "2026-04-06 15:30",
   "matches": [
     { "id": 0, "label": "Match 1", "teams": "RCB vs SRH", "date": "28 Mar", "done": true },
     { "id": 1, "label": "Match 2", "teams": "MI vs KKR", "date": "29 Mar", "done": true },
@@ -377,7 +377,8 @@
       "m9": {"runs":4,"balls":2,"fours":1,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":6,"maidens":0,"overs":3,"runs_conceded":16,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}
     },
     "Abhinandan Singh": { "m10": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":2,"blbw":0,"dots":4,"maidens":0,"overs":3.4,"runs_conceded":30,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} },
-    "Jacob Duffy": { "m10": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":2,"blbw":0,"dots":4,"maidens":0,"overs":4,"runs_conceded":58,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} }
+    "Jacob Duffy": { "m10": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":2,"blbw":0,"dots":4,"maidens":0,"overs":4,"runs_conceded":58,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} },
+    "Kumar Kushagra": { "m8": {"runs":18,"balls":14,"fours":3,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} }
   },
   "ytpReasons": {}
 }
