@@ -615,38 +615,37 @@ function showModal(player, sqName, matchNo){
   document.getElementById("modalTitle").textContent = player;
   document.getElementById("modalSub").textContent = (match.name || 'Match ' + matchNo);
 
-  // Build stats grid - show key stats
-  const statCards = [];
-  if(breakdown.runs !== null && breakdown.runs > 0) statCards.push({label: "Runs", val: breakdown.runs});
-  if(breakdown.fours > 0 || breakdown.sixs > 0) statCards.push({label: "4s / 6s", val: `${breakdown.fours || 0} / ${breakdown.sixs || 0}`});
-  if(breakdown.strikeRate !== null) statCards.push({label: "Strike Rate", val: breakdown.strikeRate.toFixed(1)});
-  if(breakdown.wickets !== null && breakdown.wickets > 0) statCards.push({label: "Wickets", val: breakdown.wickets});
-  if(breakdown.economy !== null) statCards.push({label: "Economy", val: breakdown.economy.toFixed(2)});
-  if(breakdown.dotBalls > 0) statCards.push({label: "Dot Balls", val: breakdown.dotBalls});
-  if(breakdown.catchTaken > 0) statCards.push({label: "Catches", val: breakdown.catchTaken});
-  if(breakdown.maidenOver > 0) statCards.push({label: "Maidens", val: breakdown.maidenOver});
+  // Hide stats grid - we'll show everything in breakdown
+  document.getElementById("modalStats").innerHTML = '';
 
-  document.getElementById("modalStats").innerHTML = statCards.map(s => `
-    <div class="sc-card">
-      <div class="sc-card-label">${s.label}</div>
-      <div class="sc-card-val">${s.val}</div>
-    </div>`).join("");
-
-  // Points breakdown - show ALL columns from sheet (F to V)
+  // Points breakdown - show ALL columns from sheet in order
   const breakdownRows = [];
   
-  // Add each stat that has a value
+  // Starting XI (Column F)
+  if(breakdown.startingXI && breakdown.startingXI.toLowerCase() !== 'no') {
+    breakdownRows.push({label: "Starting XI", val: 4});
+  }
+  
+  // Batting stats
   if(breakdown.runs !== null && breakdown.runs !== 0) breakdownRows.push({label: "Runs", val: breakdown.runs});
   if(breakdown.fours !== null && breakdown.fours !== 0) breakdownRows.push({label: "Fours", val: breakdown.fours});
   if(breakdown.sixs !== null && breakdown.sixs !== 0) breakdownRows.push({label: "Sixes", val: breakdown.sixs});
-  if(breakdown.bonus25_50_75_100 !== null && breakdown.bonus25_50_75_100 !== 0) breakdownRows.push({label: "Milestone Bonus", val: breakdown.bonus25_50_75_100});
+  if(breakdown.strikeRate !== null && breakdown.strikeRate !== 0) breakdownRows.push({label: "Strike Rate Bonus", val: breakdown.strikeRate});
+  if(breakdown.bonus25_50_75_100 !== null && breakdown.bonus25_50_75_100 !== 0) breakdownRows.push({label: "Milestone Bonus (25/50/75/100)", val: breakdown.bonus25_50_75_100});
+  
+  // Bowling stats
   if(breakdown.wickets !== null && breakdown.wickets !== 0) breakdownRows.push({label: "Wickets", val: breakdown.wickets});
   if(breakdown.lbwBowled !== null && breakdown.lbwBowled !== 0) breakdownRows.push({label: "LBW/Bowled Bonus", val: breakdown.lbwBowled});
   if(breakdown.dotBalls !== null && breakdown.dotBalls !== 0) breakdownRows.push({label: "Dot Balls", val: breakdown.dotBalls});
   if(breakdown.maidenOver !== null && breakdown.maidenOver !== 0) breakdownRows.push({label: "Maiden Overs", val: breakdown.maidenOver});
+  if(breakdown.economy !== null && breakdown.economy !== 0) breakdownRows.push({label: "Economy Bonus", val: breakdown.economy});
+  
+  // Fielding stats
   if(breakdown.catchTaken !== null && breakdown.catchTaken !== 0) breakdownRows.push({label: "Catches", val: breakdown.catchTaken});
   if(breakdown.catchBonus !== null && breakdown.catchBonus !== 0) breakdownRows.push({label: "Catch Bonus", val: breakdown.catchBonus});
   if(breakdown.runoutStumping !== null && breakdown.runoutStumping !== 0) breakdownRows.push({label: "Runout/Stumping", val: breakdown.runoutStumping});
+  
+  // Other
   if(breakdown.negative !== null && breakdown.negative !== 0) breakdownRows.push({label: "Negative Points", val: breakdown.negative});
   if(breakdown.bonusPoints !== null && breakdown.bonusPoints !== 0) breakdownRows.push({label: "Bonus Points", val: breakdown.bonusPoints});
 
@@ -655,7 +654,7 @@ function showModal(player, sqName, matchNo){
       <div class="pts-row">
         <span class="pts-row-label">${row.label}</span>
         <span class="pts-row-val ${row.val>0?'pos':row.val<0?'neg':'neu'}">${row.val>0?'+':''}${row.val}</span>
-      </div>`).join("") : '<div class="pts-row"><span class="pts-row-label">No detailed breakdown</span><span class="pts-row-val neu">—</span></div>') +
+      </div>`).join("") : '<div class="pts-row"><span class="pts-row-label">No points scored</span><span class="pts-row-val neu">0</span></div>') +
     `<div class="pts-row total">
       <span class="pts-row-label">Base Total Points</span>
       <span class="pts-row-val neu">${basePoints}</span>
