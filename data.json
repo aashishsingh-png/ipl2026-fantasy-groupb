@@ -18,6 +18,7 @@
       "m3": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":5,"maidens":0,"overs":3,"runs_conceded":30,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}, 
       "m8": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":1,"blbw":0,"dots":9,"maidens":0,"overs":4,"runs_conceded":48,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} 
     },
+    "Quinton de Kock": { "m0": null },
     "Marco Jansen": { 
       "m3": {"runs":10,"balls":12,"fours":0,"sixes":0,"duck":false,"wickets":1,"blbw":0,"dots":14,"maidens":0,"overs":4,"runs_conceded":20,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}, 
       "m6": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":1,"blbw":1,"dots":10,"maidens":0,"overs":4,"runs_conceded":43,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} 
@@ -60,7 +61,7 @@
     "Ishan Kishan": { 
       "m0": {"runs":80,"balls":38,"fours":8,"sixes":5,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}, 
       "m5": {"runs":14,"balls":9,"fours":3,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":2,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}, 
-      "m9": {"runs":1,"balls":4,"fours":0,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":1,"stumpings":1,"rod":1,"roi":0,"lineup":true,"impact":false} 
+      "m9": {"runs":1,"balls":4,"fours":0,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":1,"rod":1,"roi":0,"lineup":true,"impact":false} 
     },
     "Rohit Sharma": { 
       "m1": {"runs":78,"balls":38,"fours":6,"sixes":6,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}, 
@@ -77,7 +78,7 @@
     "Shivam Dube": { 
       "m2": {"runs":6,"balls":4,"fours":0,"sixes":1,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}, 
       "m6": {"runs":45,"balls":27,"fours":5,"sixes":1,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false},
-      "m10": {"runs":18,"balls":13,"fours":2,"sixes":1,"duck":false,"wickets":1,"blbw":0,"dots":1,"maidens":0,"overs":2,"runs_conceded":30,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}
+      "m10": {"runs":18,"balls":13,"fours":2,"sixes":1,"duck":false,"wickets":1,"blbw":0,"dots":0,"maidens":0,"overs":2,"runs_conceded":30,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}
     },
     "Ajinkya Rahane": { 
       "m1": {"runs":67,"balls":40,"fours":3,"sixes":5,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}, 
@@ -241,7 +242,7 @@
     },
     "Mitchell Marsh": { 
       "m4": {"runs":35,"balls":28,"fours":2,"sixes":3,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false},
-      "m10": {"runs":14,"balls":12,"fours":2,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}
+      "m9": {"runs":14,"balls":12,"fours":2,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}
     },
     "Nicholas Pooran": { 
       "m4": {"runs":8,"balls":8,"fours":1,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}, 
@@ -370,13 +371,9 @@
       "m5": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":false,"impact":true}, 
       "m9": {"runs":14,"balls":20,"fours":0,"sixes":1,"duck":false,"wickets":0,"blbw":0,"dots":0,"maidens":0,"overs":0,"runs_conceded":0,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":false,"impact":true} 
     },
-    "Anshul Kamboj": { "m10": {"runs":19,"balls":12,"fours":1,"sixes":1,"duck":false,"wickets":2,"blbw":0,"dots":0,"maidens":0,"overs":3.4,"runs_conceded":43,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} },
+    "Anshul Kamboj": { "m10": {"runs":19,"balls":12,"fours":1,"sixes":1,"duck":false,"wickets":2,"blbw":0,"dots":0,"maidens":0,"overs":4,"runs_conceded":43,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} },
     "Jamie Overton": { "m10": {"runs":37,"balls":16,"fours":4,"sixes":2,"duck":false,"wickets":1,"blbw":1,"dots":3,"maidens":0,"overs":3,"runs_conceded":42,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} },
-    "Harshal Patel": { 
-      "m0": {"runs":0,"balls":2,"fours":0,"sixes":0,"duck":true,"wickets":0,"blbw":0,"dots":3,"maidens":0,"overs":3,"runs_conceded":39,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false},
-      "m9": {"runs":4,"balls":2,"fours":1,"sixes":0,"duck":false,"wickets":0,"blbw":0,"dots":6,"maidens":0,"overs":3,"runs_conceded":16,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false}
-    },
-    "Abhinandan Singh": { "m10": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":2,"blbw":0,"dots":4,"maidens":0,"overs":3.4,"runs_conceded":30,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} },
+    "Abhinandan Singh": { "m10": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":2,"blbw":0,"dots":4,"maidens":0,"overs":4,"runs_conceded":30,"catches":1,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} },
     "Jacob Duffy": { "m10": {"runs":0,"balls":0,"fours":0,"sixes":0,"duck":false,"wickets":2,"blbw":0,"dots":4,"maidens":0,"overs":4,"runs_conceded":58,"catches":0,"stumpings":0,"rod":0,"roi":0,"lineup":true,"impact":false} }
   },
   "ytpReasons": {}
