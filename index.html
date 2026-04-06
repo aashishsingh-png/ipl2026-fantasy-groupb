@@ -224,7 +224,6 @@ const SQUADS = {
 let SHEET_DATA = null;
 
 async function fetchSheetData() {
-  // Using the export URL which has better CORS support
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
   
   try {
@@ -273,7 +272,7 @@ function parseCSVLine(line) {
 }
 
 function parseNum(val) {
-  if (!val || val === '' || val === 'null') return null;
+  if (!val || val === '' || val === 'null' || val.toLowerCase() === 'null') return null;
   const num = parseFloat(val);
   return isNaN(num) ? null : num;
 }
@@ -282,33 +281,33 @@ function parseSheetData(csvText) {
   const lines = csvText.split('\n').filter(l => l.trim());
   const headers = parseCSVLine(lines[0]);
   
-  console.log('📊 Headers:', headers);
+  console.log('📊 Sheet Headers:', headers);
   
-  // Find column indices
+  // Map ALL columns from your sheet
   const cols = {
-    playerName: headers.findIndex(h => h.toLowerCase().includes('player')),
-    squadName: headers.findIndex(h => h.toLowerCase().includes('squad')),
-    playerType: headers.findIndex(h => h.toLowerCase().includes('type')),
-    matchNo: headers.findIndex(h => h.toLowerCase().includes('match no')),
-    matchName: headers.findIndex(h => h.toLowerCase().includes('match name')),
-    startingXI: headers.findIndex(h => h.toLowerCase().includes('starting')),
-    runs: headers.findIndex(h => h.toLowerCase() === 'runs'),
-    inningsNo: headers.findIndex(h => h.toLowerCase().includes('innings')),
-    fours: headers.findIndex(h => h.toLowerCase() === 'fours'),
-    sixs: headers.findIndex(h => h.toLowerCase().includes('six')),
-    strikeRate: headers.findIndex(h => h.toLowerCase().includes('strike rate')),
-    bonus25: headers.findIndex(h => h.includes('25/50/75/100') || h.includes('Run Bonus')),
-    negative: headers.findIndex(h => h.toLowerCase() === 'negative'),
-    catchTaken: headers.findIndex(h => h.toLowerCase().includes('catch taken')),
-    catchBonus: headers.findIndex(h => h.toLowerCase().includes('catch bonus')),
-    runoutStumping: headers.findIndex(h => h.toLowerCase().includes('runout') || h.toLowerCase().includes('stumping')),
-    dotBalls: headers.findIndex(h => h.toLowerCase().includes('dot balls')),
-    wickets: headers.findIndex(h => h.toLowerCase() === 'wickets'),
-    lbwBowled: headers.findIndex(h => h.toLowerCase().includes('lbw')),
-    maidenOver: headers.findIndex(h => h.toLowerCase().includes('maiden')),
-    economy: headers.findIndex(h => h.toLowerCase() === 'economy'),
-    bonusPoints: headers.findIndex(h => h.toLowerCase().includes('bonus points')),
-    totalPoints: headers.findIndex(h => h.toLowerCase().includes('total points'))
+    playerName: 0,     // Column A
+    squadName: 1,      // Column B
+    playerType: 2,     // Column C
+    matchNo: 3,        // Column D
+    matchName: 4,      // Column E
+    startingXI: 5,     // Column F
+    runs: 6,           // Column G
+    inningsNo: 7,      // Column H
+    fours: 8,          // Column I
+    sixs: 9,           // Column J
+    strikeRate: 10,    // Column K
+    bonus25: 11,       // Column L (25/50/75/100)
+    negative: 12,      // Column M
+    catchTaken: 13,    // Column N
+    catchBonus: 14,    // Column O
+    runoutStumping: 15,// Column P
+    dotBalls: 16,      // Column Q
+    wickets: 17,       // Column R
+    lbwBowled: 18,     // Column S
+    maidenOver: 19,    // Column T
+    economy: 20,       // Column U
+    bonusPoints: 21,   // Column V
+    totalPoints: 22    // Column W (LAST COLUMN)
   };
   
   // Group data by player and match
@@ -321,7 +320,7 @@ function parseSheetData(csvText) {
     const matchNo = values[cols.matchNo];
     const matchName = values[cols.matchName];
     
-    if (!playerName || !matchNo) continue;
+    if (!playerName || !matchNo || playerName.toLowerCase() === 'total') continue;
     
     matchSet.add(JSON.stringify({ no: matchNo, name: matchName }));
     
@@ -329,28 +328,28 @@ function parseSheetData(csvText) {
       playerData[playerName] = { matches: {} };
     }
     
+    // Store ALL breakdown columns exactly as they are in the sheet
     playerData[playerName].matches[matchNo] = {
       matchName: matchName || '',
       totalPoints: parseNum(values[cols.totalPoints]),
-      stats: {
+      breakdown: {
         startingXI: values[cols.startingXI] || '',
         runs: parseNum(values[cols.runs]),
-        balls: null, // Not in sheet, will calculate SR differently
+        inningsNo: values[cols.inningsNo] || '',
         fours: parseNum(values[cols.fours]),
         sixs: parseNum(values[cols.sixs]),
         strikeRate: parseNum(values[cols.strikeRate]),
-        wickets: parseNum(values[cols.wickets]),
-        overs: null, // Not in sheet directly
-        runs_conceded: null,
-        economy: parseNum(values[cols.economy]),
-        dotBalls: parseNum(values[cols.dotBalls]),
-        maidenOver: parseNum(values[cols.maidenOver]),
-        catchTaken: parseNum(values[cols.catchTaken]),
-        runoutStumping: parseNum(values[cols.runoutStumping]),
+        bonus25_50_75_100: parseNum(values[cols.bonus25]),
         negative: parseNum(values[cols.negative]),
-        bonusPoints: parseNum(values[cols.bonusPoints]),
-        bonus25: parseNum(values[cols.bonus25]),
-        lbwBowled: parseNum(values[cols.lbwBowled])
+        catchTaken: parseNum(values[cols.catchTaken]),
+        catchBonus: parseNum(values[cols.catchBonus]),
+        runoutStumping: parseNum(values[cols.runoutStumping]),
+        dotBalls: parseNum(values[cols.dotBalls]),
+        wickets: parseNum(values[cols.wickets]),
+        lbwBowled: parseNum(values[cols.lbwBowled]),
+        maidenOver: parseNum(values[cols.maidenOver]),
+        economy: parseNum(values[cols.economy]),
+        bonusPoints: parseNum(values[cols.bonusPoints])
       }
     };
   }
@@ -385,7 +384,7 @@ let DATA=null, currentSq=null, currentTab=0;
 async function loadData(){
   try{
     DATA = await fetchSheetData();
-    SHEET_DATA = DATA; // Store for reference
+    SHEET_DATA = DATA;
     document.getElementById("updBadge").textContent="Updated " + DATA.lastUpdated;
     renderHome();
   }catch(e){
@@ -400,17 +399,17 @@ function getPlayerMatchData(player, matchNo) {
   return DATA.players[player].matches[matchNo] || null;
 }
 
-function getMatchPoints(player, matchNo) {
+function getBasePoints(player, matchNo) {
   const data = getPlayerMatchData(player, matchNo);
   return data ? data.totalPoints : null;
 }
 
-function applyRole(points, player, sqName){
-  if(points === null) return null;
+function applyMultiplier(basePoints, player, sqName){
+  if(basePoints === null) return null;
   const sq = SQUADS[sqName];
-  if(player === sq.C) return Math.round(points * 2);
-  if(player === sq.VC) return Math.round(points * 1.5);
-  return points;
+  if(player === sq.C) return Math.round(basePoints * 2);
+  if(player === sq.VC) return Math.round(basePoints * 1.5);
+  return basePoints;
 }
 
 function sqMatchTotal(sqName, matchNo){
@@ -418,8 +417,8 @@ function sqMatchTotal(sqName, matchNo){
   if (!match) return 0;
   
   return SQUADS[sqName].players.reduce((sum, p) => {
-    const pts = getMatchPoints(p, matchNo);
-    const final = applyRole(pts, p, sqName);
+    const base = getBasePoints(p, matchNo);
+    const final = applyMultiplier(base, p, sqName);
     return sum + (final ?? 0);
   }, 0);
 }
@@ -535,8 +534,8 @@ function renderDetail(ti){
     // Overall tab
     const rows = sq.players.map(p => {
       const matchPts = DATA.matches.map(m => {
-        const base = getMatchPoints(p, m.no);
-        return applyRole(base, p, currentSq);
+        const base = getBasePoints(p, m.no);
+        return applyMultiplier(base, p, currentSq);
       });
       const total = matchPts.reduce((s,v) => s + (v ?? 0), 0);
       return {p, matchPts, total, isC: p===sq.C, isVC: p===sq.VC};
@@ -568,8 +567,8 @@ function renderDetail(ti){
     const matchTotal = sqMatchTotal(currentSq, match.no);
     
     const rows = sq.players.map(p => {
-      const base = getMatchPoints(p, match.no);
-      const final = applyRole(base, p, currentSq);
+      const base = getBasePoints(p, match.no);
+      const final = applyMultiplier(base, p, currentSq);
       const hasData = getPlayerMatchData(p, match.no) !== null;
       return {p, base, final, isC: p===sq.C, isVC: p===sq.VC, hasData};
     }).sort((a,b) => (b.final ?? -999) - (a.final ?? -999));
@@ -606,24 +605,26 @@ function showModal(player, sqName, matchNo){
   if(!matchData) return;
   
   const match = DATA.matches.find(m => m.no === matchNo);
-  const stats = matchData.stats;
+  const breakdown = matchData.breakdown;
   const sq = SQUADS[sqName];
   const isC = player === sq.C;
   const isVC = player === sq.VC;
+  const basePoints = matchData.totalPoints;
+  const finalPoints = applyMultiplier(basePoints, player, sqName);
 
   document.getElementById("modalTitle").textContent = player;
   document.getElementById("modalSub").textContent = (match.name || 'Match ' + matchNo);
 
-  // Build stats grid
+  // Build stats grid - show key stats
   const statCards = [];
-  if(stats.runs !== null) statCards.push({label: "Runs", val: stats.runs});
-  if(stats.fours > 0 || stats.sixs > 0) statCards.push({label: "4s / 6s", val: `${stats.fours || 0} / ${stats.sixs || 0}`});
-  if(stats.strikeRate !== null) statCards.push({label: "Strike Rate", val: stats.strikeRate.toFixed(1)});
-  if(stats.wickets !== null && stats.wickets > 0) statCards.push({label: "Wickets", val: stats.wickets});
-  if(stats.economy !== null) statCards.push({label: "Economy", val: stats.economy.toFixed(2)});
-  if(stats.dotBalls > 0) statCards.push({label: "Dot Balls", val: stats.dotBalls});
-  if(stats.catchTaken > 0) statCards.push({label: "Catches", val: stats.catchTaken});
-  if(stats.maidenOver > 0) statCards.push({label: "Maidens", val: stats.maidenOver});
+  if(breakdown.runs !== null && breakdown.runs > 0) statCards.push({label: "Runs", val: breakdown.runs});
+  if(breakdown.fours > 0 || breakdown.sixs > 0) statCards.push({label: "4s / 6s", val: `${breakdown.fours || 0} / ${breakdown.sixs || 0}`});
+  if(breakdown.strikeRate !== null) statCards.push({label: "Strike Rate", val: breakdown.strikeRate.toFixed(1)});
+  if(breakdown.wickets !== null && breakdown.wickets > 0) statCards.push({label: "Wickets", val: breakdown.wickets});
+  if(breakdown.economy !== null) statCards.push({label: "Economy", val: breakdown.economy.toFixed(2)});
+  if(breakdown.dotBalls > 0) statCards.push({label: "Dot Balls", val: breakdown.dotBalls});
+  if(breakdown.catchTaken > 0) statCards.push({label: "Catches", val: breakdown.catchTaken});
+  if(breakdown.maidenOver > 0) statCards.push({label: "Maidens", val: breakdown.maidenOver});
 
   document.getElementById("modalStats").innerHTML = statCards.map(s => `
     <div class="sc-card">
@@ -631,38 +632,36 @@ function showModal(player, sqName, matchNo){
       <div class="sc-card-val">${s.val}</div>
     </div>`).join("");
 
-  // Points breakdown
+  // Points breakdown - show ALL columns from sheet (F to V)
   const breakdownRows = [];
-  const basePoints = matchData.totalPoints;
   
-  // Show main contributing stats
-  if(stats.runs) breakdownRows.push({label: "Runs scored", val: stats.runs});
-  if(stats.fours) breakdownRows.push({label: `Boundaries (${stats.fours}×4)`, val: stats.fours * 4});
-  if(stats.sixs) breakdownRows.push({label: `Sixes (${stats.sixs}×6)`, val: stats.sixs * 6});
-  if(stats.bonus25) breakdownRows.push({label: "Milestone bonus", val: stats.bonus25});
-  if(stats.wickets) breakdownRows.push({label: `Wickets (${stats.wickets}×30)`, val: stats.wickets * 30});
-  if(stats.dotBalls) breakdownRows.push({label: "Dot balls", val: stats.dotBalls});
-  if(stats.catchTaken) breakdownRows.push({label: `Catches (${stats.catchTaken}×8)`, val: stats.catchTaken * 8});
-  if(stats.runoutStumping) breakdownRows.push({label: "Runout/Stumping", val: stats.runoutStumping * 12});
-  if(stats.maidenOver) breakdownRows.push({label: `Maiden overs (${stats.maidenOver}×12)`, val: stats.maidenOver * 12});
-  if(stats.bonusPoints) breakdownRows.push({label: "Bonus points", val: stats.bonusPoints});
-  if(stats.negative) breakdownRows.push({label: "Penalties", val: stats.negative});
-
-  const finalPoints = applyRole(basePoints, player, sqName);
-  const multiplier = isC ? 2 : isVC ? 1.5 : 1;
+  // Add each stat that has a value
+  if(breakdown.runs !== null && breakdown.runs !== 0) breakdownRows.push({label: "Runs", val: breakdown.runs});
+  if(breakdown.fours !== null && breakdown.fours !== 0) breakdownRows.push({label: "Fours", val: breakdown.fours});
+  if(breakdown.sixs !== null && breakdown.sixs !== 0) breakdownRows.push({label: "Sixes", val: breakdown.sixs});
+  if(breakdown.bonus25_50_75_100 !== null && breakdown.bonus25_50_75_100 !== 0) breakdownRows.push({label: "Milestone Bonus", val: breakdown.bonus25_50_75_100});
+  if(breakdown.wickets !== null && breakdown.wickets !== 0) breakdownRows.push({label: "Wickets", val: breakdown.wickets});
+  if(breakdown.lbwBowled !== null && breakdown.lbwBowled !== 0) breakdownRows.push({label: "LBW/Bowled Bonus", val: breakdown.lbwBowled});
+  if(breakdown.dotBalls !== null && breakdown.dotBalls !== 0) breakdownRows.push({label: "Dot Balls", val: breakdown.dotBalls});
+  if(breakdown.maidenOver !== null && breakdown.maidenOver !== 0) breakdownRows.push({label: "Maiden Overs", val: breakdown.maidenOver});
+  if(breakdown.catchTaken !== null && breakdown.catchTaken !== 0) breakdownRows.push({label: "Catches", val: breakdown.catchTaken});
+  if(breakdown.catchBonus !== null && breakdown.catchBonus !== 0) breakdownRows.push({label: "Catch Bonus", val: breakdown.catchBonus});
+  if(breakdown.runoutStumping !== null && breakdown.runoutStumping !== 0) breakdownRows.push({label: "Runout/Stumping", val: breakdown.runoutStumping});
+  if(breakdown.negative !== null && breakdown.negative !== 0) breakdownRows.push({label: "Negative Points", val: breakdown.negative});
+  if(breakdown.bonusPoints !== null && breakdown.bonusPoints !== 0) breakdownRows.push({label: "Bonus Points", val: breakdown.bonusPoints});
 
   document.getElementById("modalBreakdown").innerHTML = 
-    breakdownRows.map(row => `
+    (breakdownRows.length > 0 ? breakdownRows.map(row => `
       <div class="pts-row">
         <span class="pts-row-label">${row.label}</span>
         <span class="pts-row-val ${row.val>0?'pos':row.val<0?'neg':'neu'}">${row.val>0?'+':''}${row.val}</span>
-      </div>`).join("") +
+      </div>`).join("") : '<div class="pts-row"><span class="pts-row-label">No detailed breakdown</span><span class="pts-row-val neu">—</span></div>') +
     `<div class="pts-row total">
-      <span class="pts-row-label">Base points</span>
+      <span class="pts-row-label">Base Total Points</span>
       <span class="pts-row-val neu">${basePoints}</span>
     </div>` +
-    (multiplier > 1 ? `<div class="pts-row total" style="background:#eff6ff">
-      <span class="pts-row-label" style="color:var(--accent);font-weight:700">Final (${isC?'C ×2':'VC ×1.5'})</span>
+    (isC || isVC ? `<div class="pts-row total" style="background:#eff6ff">
+      <span class="pts-row-label" style="color:var(--accent);font-weight:700">Final Points (${isC?'Captain ×2':'Vice-Captain ×1.5'})</span>
       <span class="pts-row-val pos" style="color:var(--accent)">${finalPoints}</span>
     </div>` : '');
 
