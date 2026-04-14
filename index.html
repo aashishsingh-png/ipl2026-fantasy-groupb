@@ -128,11 +128,14 @@
   .compare-team{text-align:center;padding:10px;background:var(--bg3);border-radius:8px;}
   .compare-team-name{font-size:11px;color:var(--muted);margin-bottom:4px;}
   .compare-team-pts{font-size:24px;font-weight:700;}
-  .compare-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .compare-table{width:100%;border-collapse:collapse;font-size:12px;}
-  .compare-table th{font-size:10px;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-weight:600;background:var(--bg3);}
-  .compare-table td{padding:6px 8px;border-bottom:1px solid var(--border);font-size:12px;}
-  .compare-table tr:last-child td{border-bottom:none;}
+  .compare-battlefield{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:12px;background:var(--border);border-radius:10px;overflow:hidden;}
+  .compare-side{background:var(--bg2);padding:8px;}
+  .compare-side-header{font-size:11px;font-weight:700;padding:8px;text-align:center;text-transform:uppercase;letter-spacing:0.05em;position:sticky;top:0;z-index:1;}
+  .compare-player-row{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;font-size:12px;border-bottom:1px solid var(--border);}
+  .compare-player-row:last-child{border-bottom:none;}
+  .compare-player-name{font-weight:500;}
+  .compare-player-pts{font-weight:700;}
+  .compare-total-row{display:flex;justify-content:space-between;padding:10px 8px;font-size:13px;font-weight:700;background:var(--bg3);margin-top:4px;border-radius:6px;}
 
   /* SCROLL INDICATOR */
   .scroll-indicator{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--accent);color:white;padding:6px 10px;border-radius:20px;font-size:11px;font-weight:600;pointer-events:none;animation:pulse 2s infinite;box-shadow:0 2px 8px #2563eb44;}
@@ -562,29 +565,24 @@ function runComparison(){
   const winner = total1 > total2 ? t1 : t2;
   const diff = Math.abs(total1 - total2);
   
-  // Build player comparison
-  const allPlayers = new Set([...sq1.players, ...sq2.players]);
-  const playerComparison = [];
-  
-  sq1.players.forEach(p => {
-    const pts1 = DATA.matches.reduce((sum, m) => {
+  // Build player lists for each team
+  const team1Players = sq1.players.map(p => {
+    const pts = DATA.matches.reduce((sum, m) => {
       const base = getBasePoints(p, m.no);
       const final = applyMultiplier(base, p, t1);
       return sum + (final ?? 0);
     }, 0);
-    playerComparison.push({player: p, team: t1, points: pts1, color: sq1.color});
-  });
+    return {player: p, points: pts, isC: p === sq1.C, isVC: p === sq1.VC};
+  }).sort((a,b) => b.points - a.points);
   
-  sq2.players.forEach(p => {
-    const pts2 = DATA.matches.reduce((sum, m) => {
+  const team2Players = sq2.players.map(p => {
+    const pts = DATA.matches.reduce((sum, m) => {
       const base = getBasePoints(p, m.no);
       const final = applyMultiplier(base, p, t2);
       return sum + (final ?? 0);
     }, 0);
-    playerComparison.push({player: p, team: t2, points: pts2, color: sq2.color});
-  });
-  
-  playerComparison.sort((a,b) => b.points - a.points);
+    return {player: p, points: pts, isC: p === sq2.C, isVC: p === sq2.VC};
+  }).sort((a,b) => b.points - a.points);
   
   document.getElementById("comparisonResult").style.display = "block";
   document.getElementById("comparisonResult").innerHTML = `
@@ -603,17 +601,41 @@ function runComparison(){
     <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:12px">
       ${winner} leads by <strong>${diff} points</strong>
     </div>
-    <div class="compare-table-wrap">
-      <table class="compare-table">
-        <thead><tr><th>Player</th><th>Team</th><th style="text-align:right">Points</th></tr></thead>
-        <tbody>${playerComparison.map(({player, team, points, color}) => `
-          <tr>
-            <td>${player}</td>
-            <td><span style="color:${color};font-weight:600;font-size:11px">${team}</span></td>
-            <td style="text-align:right;font-weight:600;color:${color}">${points}</td>
-          </tr>
-        `).join("")}</tbody>
-      </table>
+    <div class="compare-battlefield">
+      <div class="compare-side" style="border-right:1px solid var(--border)">
+        <div class="compare-side-header" style="background:${sq1.color};color:white">${t1}</div>
+        ${team1Players.map(({player, points, isC, isVC}) => `
+          <div class="compare-player-row">
+            <div class="compare-player-name">
+              ${player}
+              ${isC ? ' <span class="rtag rc">C</span>' : ''}
+              ${isVC ? ' <span class="rtag rvc">VC</span>' : ''}
+            </div>
+            <div class="compare-player-pts" style="color:${sq1.color}">${points}</div>
+          </div>
+        `).join("")}
+        <div class="compare-total-row">
+          <span>Total</span>
+          <span style="color:${sq1.color}">${total1}</span>
+        </div>
+      </div>
+      <div class="compare-side">
+        <div class="compare-side-header" style="background:${sq2.color};color:white">${t2}</div>
+        ${team2Players.map(({player, points, isC, isVC}) => `
+          <div class="compare-player-row">
+            <div class="compare-player-name">
+              ${player}
+              ${isC ? ' <span class="rtag rc">C</span>' : ''}
+              ${isVC ? ' <span class="rtag rvc">VC</span>' : ''}
+            </div>
+            <div class="compare-player-pts" style="color:${sq2.color}">${points}</div>
+          </div>
+        `).join("")}
+        <div class="compare-total-row">
+          <span>Total</span>
+          <span style="color:${sq2.color}">${total2}</span>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -684,7 +706,7 @@ function renderDetail(ti){
   const body = document.getElementById("dBody");
 
   if(ti === 0){
-    // Overall tab with collapsible sections
+    // Overall tab: Recent matches visible + total, with expandable full history
     const rows = sq.players.map(p => {
       const matchPts = DATA.matches.map(m => {
         const base = getBasePoints(p, m.no);
@@ -694,60 +716,17 @@ function renderDetail(ti){
       return {p, matchPts, total, isC: p===sq.C, isVC: p===sq.VC};
     }).sort((a,b) => b.total - a.total);
 
-    // Split matches into recent and past
-    const recentMatches = DATA.matches.slice(-5);
-    const pastMatches = DATA.matches.slice(0, -5);
-    const recentStartIdx = Math.max(0, DATA.matches.length - 5);
+    // Show recent 10 matches (or all if less than 10)
+    const recentCount = Math.min(10, DATA.matches.length);
+    const recentMatches = DATA.matches.slice(-recentCount);
+    const recentStartIdx = DATA.matches.length - recentCount;
+    const hasMoreMatches = DATA.matches.length > recentCount;
 
     body.innerHTML = `
       <div class="matches-section">
-        ${pastMatches.length > 0 ? `
-          <div class="section-header" onclick="toggleSection('past')">
-            <div class="section-title">📜 Past Matches (${pastMatches.length})</div>
-            <div class="section-toggle" id="pastToggle">
-              Show <span>▼</span>
-            </div>
-          </div>
-          <div class="section-content" id="pastSection">
-            <div class="table-wrapper">
-              <div class="compact-table-wrap" id="pastTable">
-                <div class="scroll-indicator" id="scrollIndPast">Scroll →</div>
-                <table class="compact-table">
-                  <thead><tr>
-                    <th class="player-col">Player</th>
-                    ${pastMatches.map((m, idx) => `<th class="match-col" title="${m.name || 'Match ' + m.no}">M${idx + 1}</th>`).join("")}
-                    <th class="total-col">Sub-Total</th>
-                  </tr></thead>
-                  <tbody>${rows.map(({p, matchPts, isC, isVC}) => {
-                    const pastPts = matchPts.slice(0, pastMatches.length);
-                    const pastTotal = pastPts.reduce((s,v) => s + (v ?? 0), 0);
-                    return `<tr>
-                      <td class="player-col">
-                        <div class="pname" style="font-size:11px">
-                          ${p}
-                          ${isC?'<span class="rtag rc">C</span>':''}
-                          ${isVC?'<span class="rtag rvc">VC</span>':''}
-                        </div>
-                      </td>
-                      ${pastPts.map((v, idx) => {
-                        const matchNo = DATA.matches[idx].no;
-                        const hasData = getPlayerMatchData(p, matchNo) !== null;
-                        return `<td class="match-col ${v===null?'c-muted':v>0?'c-pos':v<0?'c-neg':''}">
-                          ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
-                        </td>`;
-                      }).join("")}
-                      <td class="total-col" style="color:${pastTotal>0?c:'var(--muted)'}">${pastTotal||'—'}</td>
-                    </tr>`;
-                  }).join("")}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        ` : ''}
-        
-        <div class="section-header" style="${pastMatches.length === 0 ? 'cursor:default' : ''}">
-          <div class="section-title">🔥 Recent ${recentMatches.length} Matches</div>
+        <!-- RECENT MATCHES - Always visible -->
+        <div class="section-header" style="cursor:default;padding-bottom:6px;">
+          <div class="section-title">🔥 Recent ${recentCount} Match${recentCount > 1 ? 'es' : ''}</div>
         </div>
         <div class="section-content expanded">
           <div class="table-wrapper">
@@ -756,12 +735,17 @@ function renderDetail(ti){
               <table class="compact-table">
                 <thead><tr>
                   <th class="player-col">Player</th>
-                  ${recentMatches.map((m, idx) => `<th class="match-col" title="${m.name || 'Match ' + m.no}">M${recentStartIdx + idx + 1}</th>`).join("")}
-                  <th class="total-col">Sub-Total</th>
+                  ${recentMatches.map((m, idx) => {
+                    const shortName = (m.name || 'Match ' + m.no).split(' vs ').map(t => {
+                      const parts = t.trim().split(' ');
+                      return parts.length > 1 ? parts.map(p => p[0]).join('') : t.substring(0, 3).toUpperCase();
+                    }).join(' v ');
+                    return `<th class="match-col" title="${m.name || 'Match ' + m.no}">${shortName}</th>`;
+                  }).join("")}
+                  <th class="total-col">Total</th>
                 </tr></thead>
                 <tbody>${rows.map(({p, matchPts, total, isC, isVC}) => {
                   const recentPts = matchPts.slice(recentStartIdx);
-                  const recentTotal = recentPts.reduce((s,v) => s + (v ?? 0), 0);
                   return `<tr>
                     <td class="player-col">
                       <div class="pname" style="font-size:11px">
@@ -777,7 +761,7 @@ function renderDetail(ti){
                         ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
                       </td>`;
                     }).join("")}
-                    <td class="total-col" style="color:${recentTotal>0?c:'var(--muted)'}">${recentTotal||'—'}</td>
+                    <td class="total-col" style="color:${total>0?c:'var(--muted)'};font-size:15px">${total||'—'}</td>
                   </tr>`;
                 }).join("")}
                 </tbody>
@@ -786,19 +770,54 @@ function renderDetail(ti){
           </div>
         </div>
         
-        <div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:10px;text-align:center;">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Overall Total</div>
-          <div style="font-size:24px;font-weight:700;color:${c}">${rows.reduce((s,r) => s + r.total, 0)}</div>
-        </div>
+        ${hasMoreMatches ? `
+          <!-- FULL HISTORY - Collapsible -->
+          <div class="section-header" onclick="toggleFullHistory()" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+            <div class="section-title">📊 View Full Match History (All ${DATA.matches.length} Matches)</div>
+            <div class="section-toggle" id="fullHistoryToggle">
+              Expand <span>▼</span>
+            </div>
+          </div>
+          <div class="section-content" id="fullHistorySection">
+            <div class="table-wrapper">
+              <div class="compact-table-wrap" id="fullTable">
+                <div class="scroll-indicator" id="scrollIndFull">Scroll →</div>
+                <table class="compact-table">
+                  <thead><tr>
+                    <th class="player-col">Player</th>
+                    ${DATA.matches.map((m, idx) => `<th class="match-col" title="${m.name || 'Match ' + m.no}">M${idx + 1}</th>`).join("")}
+                    <th class="total-col">Total</th>
+                  </tr></thead>
+                  <tbody>${rows.map(({p, matchPts, total, isC, isVC}) => `
+                    <tr>
+                      <td class="player-col">
+                        <div class="pname" style="font-size:11px">
+                          ${p}
+                          ${isC?'<span class="rtag rc">C</span>':''}
+                          ${isVC?'<span class="rtag rvc">VC</span>':''}
+                        </div>
+                      </td>
+                      ${matchPts.map((v, idx) => {
+                        const matchNo = DATA.matches[idx].no;
+                        const hasData = getPlayerMatchData(p, matchNo) !== null;
+                        return `<td class="match-col ${v===null?'c-muted':v>0?'c-pos':v<0?'c-neg':''}">
+                          ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
+                        </td>`;
+                      }).join("")}
+                      <td class="total-col" style="color:${total>0?c:'var(--muted)'}">${total||'—'}</td>
+                    </tr>`).join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
     
     // Setup scroll indicators
     setTimeout(() => {
       setupScrollIndicator('recentTable', 'scrollIndRecent');
-      if(pastMatches.length > 0) {
-        setupScrollIndicator('pastTable', 'scrollIndPast');
-      }
     }, 100);
 
   } else {
@@ -836,6 +855,21 @@ function renderDetail(ti){
           </tr>`).join("")}
         </tbody>
       </table>`;
+  }
+}
+
+function toggleFullHistory(){
+  const section = document.getElementById('fullHistorySection');
+  const toggle = document.getElementById('fullHistoryToggle');
+  
+  if(section.classList.contains('expanded')){
+    section.classList.remove('expanded');
+    toggle.innerHTML = 'Expand <span>▼</span>';
+  } else {
+    section.classList.add('expanded');
+    toggle.innerHTML = 'Collapse <span>▲</span>';
+    // Setup scroll indicator when section expands
+    setTimeout(() => setupScrollIndicator('fullTable', 'scrollIndFull'), 100);
   }
 }
 
