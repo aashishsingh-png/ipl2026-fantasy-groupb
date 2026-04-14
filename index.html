@@ -84,14 +84,14 @@
   .compact-table{width:100%;border-collapse:collapse;font-size:12px;}
   .compact-table th{font-size:9px;color:var(--text);text-align:left;padding:8px 6px;border-bottom:2px solid var(--border);font-weight:700;background:linear-gradient(to bottom,#f9fafb,#f3f4f6);white-space:nowrap;position:sticky;left:0;z-index:1;text-transform:uppercase;letter-spacing:0.03em;}
   .compact-table th.player-col{min-width:140px;max-width:140px;position:sticky;left:0;background:linear-gradient(to bottom,#f9fafb,#f3f4f6);z-index:2;}
-  .compact-table th.match-col{text-align:center;min-width:40px;}
-  .compact-table th.total-col{text-align:right;position:sticky;right:0;background:linear-gradient(to bottom,#f9fafb,#f3f4f6);z-index:2;min-width:50px;}
+  .compact-table th.match-col{text-align:center;min-width:80px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .compact-table th.total-col{text-align:right;position:sticky;right:0;background:linear-gradient(to bottom,#f9fafb,#f3f4f6);z-index:2;min-width:60px;}
   .compact-table td{padding:6px;border-bottom:1px solid var(--border);background:var(--bg2);vertical-align:middle;}
   .compact-table td.player-col{position:sticky;left:0;background:var(--bg2);z-index:1;min-width:140px;max-width:140px;}
-  .compact-table td.total-col{position:sticky;right:0;background:var(--bg2);z-index:1;text-align:right;font-weight:600;min-width:50px;}
+  .compact-table td.total-col{position:sticky;right:0;background:var(--bg2);z-index:1;text-align:right;font-weight:600;min-width:60px;}
   .compact-table tr:hover td{background:var(--bg3);}
   .compact-table tr:hover td.player-col,.compact-table tr:hover td.total-col{background:var(--bg3);}
-  .compact-table td.match-col{text-align:center;font-size:11px;}
+  .compact-table td.match-col{text-align:center;font-size:11px;min-width:80px;max-width:120px;}
 
   /* PLAYER TABLE */
   .ptable{width:100%;border-collapse:collapse;}
@@ -736,11 +736,9 @@ function renderDetail(ti){
                 <thead><tr>
                   <th class="player-col">Player</th>
                   ${recentMatches.map((m, idx) => {
-                    const shortName = (m.name || 'Match ' + m.no).split(' vs ').map(t => {
-                      const parts = t.trim().split(' ');
-                      return parts.length > 1 ? parts.map(p => p[0]).join('') : t.substring(0, 3).toUpperCase();
-                    }).join(' v ');
-                    return `<th class="match-col" title="${m.name || 'Match ' + m.no}">${shortName}</th>`;
+                    // Use the actual match name from the sheet
+                    const displayName = m.name || 'Match ' + m.no;
+                    return `<th class="match-col" title="${displayName}">${displayName}</th>`;
                   }).join("")}
                   <th class="total-col">Total</th>
                 </tr></thead>
