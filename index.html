@@ -80,12 +80,12 @@
   .tb:hover:not(.act){color:var(--text);}
 
   /* COMPACT TABLE - for Overall view with many matches */
-  .compact-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px;}
+  .compact-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px;position:relative;}
   .compact-table{width:100%;border-collapse:collapse;font-size:12px;}
-  .compact-table th{font-size:9px;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);font-weight:600;background:var(--bg3);white-space:nowrap;position:sticky;left:0;z-index:1;}
-  .compact-table th.player-col{min-width:140px;max-width:140px;position:sticky;left:0;background:var(--bg3);z-index:2;}
+  .compact-table th{font-size:9px;color:var(--text);text-align:left;padding:8px 6px;border-bottom:2px solid var(--border);font-weight:700;background:linear-gradient(to bottom,#f9fafb,#f3f4f6);white-space:nowrap;position:sticky;left:0;z-index:1;text-transform:uppercase;letter-spacing:0.03em;}
+  .compact-table th.player-col{min-width:140px;max-width:140px;position:sticky;left:0;background:linear-gradient(to bottom,#f9fafb,#f3f4f6);z-index:2;}
   .compact-table th.match-col{text-align:center;min-width:40px;}
-  .compact-table th.total-col{text-align:right;position:sticky;right:0;background:var(--bg3);z-index:2;min-width:50px;}
+  .compact-table th.total-col{text-align:right;position:sticky;right:0;background:linear-gradient(to bottom,#f9fafb,#f3f4f6);z-index:2;min-width:50px;}
   .compact-table td{padding:6px;border-bottom:1px solid var(--border);background:var(--bg2);vertical-align:middle;}
   .compact-table td.player-col{position:sticky;left:0;background:var(--bg2);z-index:1;min-width:140px;max-width:140px;}
   .compact-table td.total-col{position:sticky;right:0;background:var(--bg2);z-index:1;text-align:right;font-weight:600;min-width:50px;}
@@ -113,6 +113,41 @@
   /* CLICKABLE PTS CELL */
   .pts-clickable{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;}
   .pts-clickable:hover{opacity:0.75;}
+
+  /* COMPARISON SECTION */
+  .compare-section{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin:16px;box-shadow:0 1px 3px #0000000a;}
+  .compare-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text);}
+  .compare-selectors{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:12px;}
+  .compare-select{padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);font-size:13px;color:var(--text);width:100%;}
+  .compare-vs{font-size:12px;color:var(--muted);font-weight:600;}
+  .compare-btn{width:100%;padding:10px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+  .compare-btn:hover{background:#1e40af;}
+  .compare-btn:disabled{background:var(--border);cursor:not-allowed;}
+  .compare-result{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+  .compare-teams{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .compare-team{text-align:center;padding:10px;background:var(--bg3);border-radius:8px;}
+  .compare-team-name{font-size:11px;color:var(--muted);margin-bottom:4px;}
+  .compare-team-pts{font-size:24px;font-weight:700;}
+  .compare-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .compare-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .compare-table th{font-size:10px;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-weight:600;background:var(--bg3);}
+  .compare-table td{padding:6px 8px;border-bottom:1px solid var(--border);font-size:12px;}
+  .compare-table tr:last-child td{border-bottom:none;}
+
+  /* SCROLL INDICATOR */
+  .scroll-indicator{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:var(--accent);color:white;padding:6px 10px;border-radius:20px;font-size:11px;font-weight:600;pointer-events:none;animation:pulse 2s infinite;box-shadow:0 2px 8px #2563eb44;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
+  .table-wrapper{position:relative;}
+  .scroll-indicator.hidden{display:none;}
+
+  /* COLLAPSIBLE SECTIONS */
+  .matches-section{margin-top:12px;}
+  .section-header{display:flex;align-items:center;justify-content:space-between;padding:10px 0;cursor:pointer;user-select:none;}
+  .section-header:hover .section-title{color:var(--accent);}
+  .section-title{font-size:12px;font-weight:600;color:var(--text);}
+  .section-toggle{font-size:11px;color:var(--accent);display:flex;align-items:center;gap:4px;}
+  .section-content{display:none;overflow:hidden;}
+  .section-content.expanded{display:block;}
 
   /* MATCH SUMMARY BAR */
   .m-summary{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin:14px 16px 12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px #0000000a;}
@@ -166,6 +201,23 @@
   </div>
   <div id="homeContent" style="display:none">
     <div class="podium" id="podium"></div>
+    
+    <!-- COMPARISON SECTION -->
+    <div class="compare-section">
+      <div class="compare-title">🔍 Compare Squads</div>
+      <div class="compare-selectors">
+        <select class="compare-select" id="compareTeam1">
+          <option value="">Select Squad 1</option>
+        </select>
+        <span class="compare-vs">VS</span>
+        <select class="compare-select" id="compareTeam2">
+          <option value="">Select Squad 2</option>
+        </select>
+      </div>
+      <button class="compare-btn" id="compareBtn" onclick="runComparison()" disabled>Compare Teams</button>
+      <div id="comparisonResult" style="display:none"></div>
+    </div>
+    
     <div class="section">
       <div class="sec-title">All Squads — tap to explore</div>
       <div id="sqList"></div>
@@ -457,6 +509,17 @@ function renderHome(){
     </div>`;
   }).join("");
 
+  // Populate comparison dropdowns
+  const squadOptions = Object.keys(SQUADS).map(sq => 
+    `<option value="${sq}">${sq}</option>`
+  ).join("");
+  document.getElementById("compareTeam1").innerHTML = '<option value="">Select Squad 1</option>' + squadOptions;
+  document.getElementById("compareTeam2").innerHTML = '<option value="">Select Squad 2</option>' + squadOptions;
+  
+  // Enable compare button when both teams selected
+  document.getElementById("compareTeam1").onchange = checkCompareReady;
+  document.getElementById("compareTeam2").onchange = checkCompareReady;
+
   document.getElementById("sqList").innerHTML = r.map(({sq,total},i) => {
     const c = SQUADS[sq].color, pct = Math.round((total/max)*100);
     const avg = sqAverage(sq);
@@ -481,6 +544,78 @@ function renderHome(){
       <div class="sq-pts"><div class="sq-pts-val" style="color:${c}">${total}</div><div class="sq-pts-lbl">pts</div></div>
     </div>`;
   }).join("");
+}
+
+function checkCompareReady(){
+  const t1 = document.getElementById("compareTeam1").value;
+  const t2 = document.getElementById("compareTeam2").value;
+  document.getElementById("compareBtn").disabled = !(t1 && t2 && t1 !== t2);
+}
+
+function runComparison(){
+  const t1 = document.getElementById("compareTeam1").value;
+  const t2 = document.getElementById("compareTeam2").value;
+  if(!t1 || !t2 || t1 === t2) return;
+  
+  const sq1 = SQUADS[t1], sq2 = SQUADS[t2];
+  const total1 = sqTotal(t1), total2 = sqTotal(t2);
+  const winner = total1 > total2 ? t1 : t2;
+  const diff = Math.abs(total1 - total2);
+  
+  // Build player comparison
+  const allPlayers = new Set([...sq1.players, ...sq2.players]);
+  const playerComparison = [];
+  
+  sq1.players.forEach(p => {
+    const pts1 = DATA.matches.reduce((sum, m) => {
+      const base = getBasePoints(p, m.no);
+      const final = applyMultiplier(base, p, t1);
+      return sum + (final ?? 0);
+    }, 0);
+    playerComparison.push({player: p, team: t1, points: pts1, color: sq1.color});
+  });
+  
+  sq2.players.forEach(p => {
+    const pts2 = DATA.matches.reduce((sum, m) => {
+      const base = getBasePoints(p, m.no);
+      const final = applyMultiplier(base, p, t2);
+      return sum + (final ?? 0);
+    }, 0);
+    playerComparison.push({player: p, team: t2, points: pts2, color: sq2.color});
+  });
+  
+  playerComparison.sort((a,b) => b.points - a.points);
+  
+  document.getElementById("comparisonResult").style.display = "block";
+  document.getElementById("comparisonResult").innerHTML = `
+    <div class="compare-teams">
+      <div class="compare-team" style="background:${sq1.color}18;border:2px solid ${winner===t1?sq1.color:'var(--border)'}">
+        <div class="compare-team-name">${t1}</div>
+        <div class="compare-team-pts" style="color:${sq1.color}">${total1}</div>
+        ${winner===t1?'<div style="font-size:20px;margin-top:4px">🏆</div>':''}
+      </div>
+      <div class="compare-team" style="background:${sq2.color}18;border:2px solid ${winner===t2?sq2.color:'var(--border)'}">
+        <div class="compare-team-name">${t2}</div>
+        <div class="compare-team-pts" style="color:${sq2.color}">${total2}</div>
+        ${winner===t2?'<div style="font-size:20px;margin-top:4px">🏆</div>':''}
+      </div>
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:12px">
+      ${winner} leads by <strong>${diff} points</strong>
+    </div>
+    <div class="compare-table-wrap">
+      <table class="compare-table">
+        <thead><tr><th>Player</th><th>Team</th><th style="text-align:right">Points</th></tr></thead>
+        <tbody>${playerComparison.map(({player, team, points, color}) => `
+          <tr>
+            <td>${player}</td>
+            <td><span style="color:${color};font-weight:600;font-size:11px">${team}</span></td>
+            <td style="text-align:right;font-weight:600;color:${color}">${points}</td>
+          </tr>
+        `).join("")}</tbody>
+      </table>
+    </div>
+  `;
 }
 
 // ── DETAIL ────────────────────────────────────────────────────────────────────
@@ -549,7 +684,7 @@ function renderDetail(ti){
   const body = document.getElementById("dBody");
 
   if(ti === 0){
-    // Overall tab with compact horizontal scrolling table
+    // Overall tab with collapsible sections
     const rows = sq.players.map(p => {
       const matchPts = DATA.matches.map(m => {
         const base = getBasePoints(p, m.no);
@@ -559,40 +694,115 @@ function renderDetail(ti){
       return {p, matchPts, total, isC: p===sq.C, isVC: p===sq.VC};
     }).sort((a,b) => b.total - a.total);
 
-    body.innerHTML = `<div class="compact-table-wrap">
-      <table class="compact-table">
-        <thead><tr>
-          <th class="player-col">Player</th>
-          ${DATA.matches.map((m, idx) => {
-            // Use M1, M2, etc for column headers
-            return `<th class="match-col" title="${m.name || 'Match ' + m.no}">M${idx + 1}</th>`;
-          }).join("")}
-          <th class="total-col">Total</th>
-        </tr></thead>
-        <tbody>${rows.map(({p, matchPts, total, isC, isVC}) => `
-          <tr>
-            <td class="player-col">
-              <div class="pname" style="font-size:11px">
-                ${p}
-                ${isC?'<span class="rtag rc">C</span>':''}
-                ${isVC?'<span class="rtag rvc">VC</span>':''}
+    // Split matches into recent and past
+    const recentMatches = DATA.matches.slice(-5);
+    const pastMatches = DATA.matches.slice(0, -5);
+    const recentStartIdx = Math.max(0, DATA.matches.length - 5);
+
+    body.innerHTML = `
+      <div class="matches-section">
+        ${pastMatches.length > 0 ? `
+          <div class="section-header" onclick="toggleSection('past')">
+            <div class="section-title">📜 Past Matches (${pastMatches.length})</div>
+            <div class="section-toggle" id="pastToggle">
+              Show <span>▼</span>
+            </div>
+          </div>
+          <div class="section-content" id="pastSection">
+            <div class="table-wrapper">
+              <div class="compact-table-wrap" id="pastTable">
+                <div class="scroll-indicator" id="scrollIndPast">Scroll →</div>
+                <table class="compact-table">
+                  <thead><tr>
+                    <th class="player-col">Player</th>
+                    ${pastMatches.map((m, idx) => `<th class="match-col" title="${m.name || 'Match ' + m.no}">M${idx + 1}</th>`).join("")}
+                    <th class="total-col">Sub-Total</th>
+                  </tr></thead>
+                  <tbody>${rows.map(({p, matchPts, isC, isVC}) => {
+                    const pastPts = matchPts.slice(0, pastMatches.length);
+                    const pastTotal = pastPts.reduce((s,v) => s + (v ?? 0), 0);
+                    return `<tr>
+                      <td class="player-col">
+                        <div class="pname" style="font-size:11px">
+                          ${p}
+                          ${isC?'<span class="rtag rc">C</span>':''}
+                          ${isVC?'<span class="rtag rvc">VC</span>':''}
+                        </div>
+                      </td>
+                      ${pastPts.map((v, idx) => {
+                        const matchNo = DATA.matches[idx].no;
+                        const hasData = getPlayerMatchData(p, matchNo) !== null;
+                        return `<td class="match-col ${v===null?'c-muted':v>0?'c-pos':v<0?'c-neg':''}">
+                          ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
+                        </td>`;
+                      }).join("")}
+                      <td class="total-col" style="color:${pastTotal>0?c:'var(--muted)'}">${pastTotal||'—'}</td>
+                    </tr>`;
+                  }).join("")}
+                  </tbody>
+                </table>
               </div>
-            </td>
-            ${matchPts.map((v, idx) => {
-              const matchNo = DATA.matches[idx].no;
-              const hasData = getPlayerMatchData(p, matchNo) !== null;
-              return `<td class="match-col ${v===null?'c-muted':v>0?'c-pos':v<0?'c-neg':''}">
-                ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
-              </td>`;
-            }).join("")}
-            <td class="total-col" style="color:${total>0?c:'var(--muted)'}">${total||'—'}</td>
-          </tr>`).join("")}
-        </tbody>
-      </table>
-    </div>`;
+            </div>
+          </div>
+        ` : ''}
+        
+        <div class="section-header" style="${pastMatches.length === 0 ? 'cursor:default' : ''}">
+          <div class="section-title">🔥 Recent ${recentMatches.length} Matches</div>
+        </div>
+        <div class="section-content expanded">
+          <div class="table-wrapper">
+            <div class="compact-table-wrap" id="recentTable">
+              <div class="scroll-indicator" id="scrollIndRecent">Scroll →</div>
+              <table class="compact-table">
+                <thead><tr>
+                  <th class="player-col">Player</th>
+                  ${recentMatches.map((m, idx) => `<th class="match-col" title="${m.name || 'Match ' + m.no}">M${recentStartIdx + idx + 1}</th>`).join("")}
+                  <th class="total-col">Sub-Total</th>
+                </tr></thead>
+                <tbody>${rows.map(({p, matchPts, total, isC, isVC}) => {
+                  const recentPts = matchPts.slice(recentStartIdx);
+                  const recentTotal = recentPts.reduce((s,v) => s + (v ?? 0), 0);
+                  return `<tr>
+                    <td class="player-col">
+                      <div class="pname" style="font-size:11px">
+                        ${p}
+                        ${isC?'<span class="rtag rc">C</span>':''}
+                        ${isVC?'<span class="rtag rvc">VC</span>':''}
+                      </div>
+                    </td>
+                    ${recentPts.map((v, idx) => {
+                      const matchNo = DATA.matches[recentStartIdx + idx].no;
+                      const hasData = getPlayerMatchData(p, matchNo) !== null;
+                      return `<td class="match-col ${v===null?'c-muted':v>0?'c-pos':v<0?'c-neg':''}">
+                        ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
+                      </td>`;
+                    }).join("")}
+                    <td class="total-col" style="color:${recentTotal>0?c:'var(--muted)'}">${recentTotal||'—'}</td>
+                  </tr>`;
+                }).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:10px;text-align:center;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Overall Total</div>
+          <div style="font-size:24px;font-weight:700;color:${c}">${rows.reduce((s,r) => s + r.total, 0)}</div>
+        </div>
+      </div>
+    `;
+    
+    // Setup scroll indicators
+    setTimeout(() => {
+      setupScrollIndicator('recentTable', 'scrollIndRecent');
+      if(pastMatches.length > 0) {
+        setupScrollIndicator('pastTable', 'scrollIndPast');
+      }
+    }, 100);
 
   } else {
-    // Individual match tab
+    // Individual match tab (unchanged)
     const match = DATA.matches[ti - 1];
     const matchTotal = sqMatchTotal(currentSq, match.no);
     
@@ -627,6 +837,40 @@ function renderDetail(ti){
         </tbody>
       </table>`;
   }
+}
+
+function toggleSection(sectionId){
+  const section = document.getElementById(sectionId + 'Section');
+  const toggle = document.getElementById(sectionId + 'Toggle');
+  
+  if(section.classList.contains('expanded')){
+    section.classList.remove('expanded');
+    toggle.innerHTML = 'Show <span>▼</span>';
+  } else {
+    section.classList.add('expanded');
+    toggle.innerHTML = 'Hide <span>▲</span>';
+    // Setup scroll indicator when section expands
+    setTimeout(() => setupScrollIndicator(sectionId + 'Table', 'scrollInd' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1)), 100);
+  }
+}
+
+function setupScrollIndicator(tableId, indicatorId){
+  const table = document.getElementById(tableId);
+  const indicator = document.getElementById(indicatorId);
+  
+  if(!table || !indicator) return;
+  
+  const checkScroll = () => {
+    if(table.scrollWidth > table.clientWidth && table.scrollLeft < 50){
+      indicator.classList.remove('hidden');
+    } else {
+      indicator.classList.add('hidden');
+    }
+  };
+  
+  checkScroll();
+  table.addEventListener('scroll', checkScroll);
+  window.addEventListener('resize', checkScroll);
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
