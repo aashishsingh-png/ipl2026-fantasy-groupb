@@ -52,9 +52,10 @@
   .tag{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid;}
   .sq-bar-wrap{width:100%;background:var(--border);border-radius:3px;height:3px;margin-top:7px;overflow:hidden;}
   .sq-bar{height:100%;border-radius:3px;}
-  .sq-mpts{display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;}
-  .mchip{font-size:11px;color:var(--muted);}
-  .mchip strong{color:var(--text);}
+  .sq-summary{margin-top:6px;display:flex;gap:14px;align-items:center;}
+  .sq-summary-item{font-size:11px;}
+  .sq-summary-item .label{color:var(--muted);}
+  .sq-summary-item .value{color:var(--text);font-weight:600;margin-left:3px;}
   .sq-pts{text-align:right;flex-shrink:0;}
   .sq-pts-val{font-size:21px;font-weight:700;}
   .sq-pts-lbl{font-size:10px;color:var(--muted);}
@@ -66,16 +67,31 @@
   .d-avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0;}
   .d-squad-name{font-size:19px;font-weight:700;}
   .d-owner{font-size:12px;color:var(--muted);margin-top:2px;}
-  .d-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .d-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
   .stat{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px;text-align:center;}
   .stat-v{font-size:19px;font-weight:700;}
   .stat-l{font-size:10px;color:var(--muted);margin-top:2px;}
 
-  /* TABS */
-  .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;background:var(--bg2);}
-  .tb{background:none;border:none;color:var(--muted);padding:9px 13px;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s;}
+  /* TABS - Updated for scrollability */
+  .tabs{display:flex;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;background:var(--bg2);-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tb{background:none;border:none;color:var(--muted);padding:9px 13px;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s;flex-shrink:0;}
   .tb.act{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
   .tb:hover:not(.act){color:var(--text);}
+
+  /* COMPACT TABLE - for Overall view with many matches */
+  .compact-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px;}
+  .compact-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .compact-table th{font-size:9px;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);font-weight:600;background:var(--bg3);white-space:nowrap;position:sticky;left:0;z-index:1;}
+  .compact-table th.player-col{min-width:140px;max-width:140px;position:sticky;left:0;background:var(--bg3);z-index:2;}
+  .compact-table th.match-col{text-align:center;min-width:40px;}
+  .compact-table th.total-col{text-align:right;position:sticky;right:0;background:var(--bg3);z-index:2;min-width:50px;}
+  .compact-table td{padding:6px;border-bottom:1px solid var(--border);background:var(--bg2);vertical-align:middle;}
+  .compact-table td.player-col{position:sticky;left:0;background:var(--bg2);z-index:1;min-width:140px;max-width:140px;}
+  .compact-table td.total-col{position:sticky;right:0;background:var(--bg2);z-index:1;text-align:right;font-weight:600;min-width:50px;}
+  .compact-table tr:hover td{background:var(--bg3);}
+  .compact-table tr:hover td.player-col,.compact-table tr:hover td.total-col{background:var(--bg3);}
+  .compact-table td.match-col{text-align:center;font-size:11px;}
 
   /* PLAYER TABLE */
   .ptable{width:100%;border-collapse:collapse;}
@@ -180,7 +196,7 @@
 // GOOGLE SHEETS CONFIGURATION
 // ══════════════════════════════════════════════════════════════════════════════
 const SHEET_ID = '1BQyrCNM7d9wEw5LNKIwm8ZXfNN3JhPR3rrUOlq3I8zs';
-const SHEET_GID = '0'; // This is the gid from your sheet URL (gid=0)
+const SHEET_GID = '0';
 
 // ── SQUADS ────────────────────────────────────────────────────────────────────
 const SQUADS = {
@@ -283,34 +299,13 @@ function parseSheetData(csvText) {
   
   console.log('📊 Sheet Headers:', headers);
   
-  // Map ALL columns from your sheet
   const cols = {
-    playerName: 0,     // Column A
-    squadName: 1,      // Column B
-    playerType: 2,     // Column C
-    matchNo: 3,        // Column D
-    matchName: 4,      // Column E
-    startingXI: 5,     // Column F
-    runs: 6,           // Column G
-    inningsNo: 7,      // Column H
-    fours: 8,          // Column I
-    sixs: 9,           // Column J
-    strikeRate: 10,    // Column K
-    bonus25: 11,       // Column L (25/50/75/100)
-    negative: 12,      // Column M
-    catchTaken: 13,    // Column N
-    catchBonus: 14,    // Column O
-    runoutStumping: 15,// Column P
-    dotBalls: 16,      // Column Q
-    wickets: 17,       // Column R
-    lbwBowled: 18,     // Column S
-    maidenOver: 19,    // Column T
-    economy: 20,       // Column U
-    bonusPoints: 21,   // Column V
-    totalPoints: 22    // Column W (LAST COLUMN)
+    playerName: 0, squadName: 1, playerType: 2, matchNo: 3, matchName: 4, startingXI: 5,
+    runs: 6, inningsNo: 7, fours: 8, sixs: 9, strikeRate: 10, bonus25: 11, negative: 12,
+    catchTaken: 13, catchBonus: 14, runoutStumping: 15, dotBalls: 16, wickets: 17,
+    lbwBowled: 18, maidenOver: 19, economy: 20, bonusPoints: 21, totalPoints: 22
   };
   
-  // Group data by player and match
   const playerData = {};
   const matchSet = new Set();
   
@@ -328,7 +323,6 @@ function parseSheetData(csvText) {
       playerData[playerName] = { matches: {} };
     }
     
-    // Store ALL breakdown columns exactly as they are in the sheet
     playerData[playerName].matches[matchNo] = {
       matchName: matchName || '',
       totalPoints: parseNum(values[cols.totalPoints]),
@@ -354,7 +348,6 @@ function parseSheetData(csvText) {
     };
   }
   
-  // Extract unique matches
   const matches = Array.from(matchSet)
     .map(m => JSON.parse(m))
     .sort((a, b) => {
@@ -429,6 +422,20 @@ function sqTotal(sqName){
   }, 0);
 }
 
+function sqAverage(sqName){
+  const matchesWithPoints = DATA.matches.filter(m => sqMatchTotal(sqName, m.no) > 0).length;
+  return matchesWithPoints > 0 ? Math.round(sqTotal(sqName) / matchesWithPoints) : 0;
+}
+
+function sqBestMatch(sqName){
+  let best = 0;
+  DATA.matches.forEach(m => {
+    const pts = sqMatchTotal(sqName, m.no);
+    if(pts > best) best = pts;
+  });
+  return best;
+}
+
 function ranked(){
   return Object.keys(SQUADS).map(sq => ({sq, total: sqTotal(sq)})).sort((a,b) => b.total - a.total);
 }
@@ -452,9 +459,10 @@ function renderHome(){
 
   document.getElementById("sqList").innerHTML = r.map(({sq,total},i) => {
     const c = SQUADS[sq].color, pct = Math.round((total/max)*100);
-    const mpts = DATA.matches.map(m => 
-      `<span class="mchip">${m.name || 'Match ' + m.no}: <strong>${sqMatchTotal(sq, m.no)}</strong></span>`
-    ).join("");
+    const avg = sqAverage(sq);
+    const best = sqBestMatch(sq);
+    const matchesPlayed = DATA.matches.filter(m => sqMatchTotal(sq, m.no) > 0).length;
+    
     return `<div class="sq-row" onclick="goDetail('${sq}')">
       <div class="sq-rank" style="background:${c}18;color:${c};border:1px solid ${c}33">${i+1}</div>
       <div class="sq-info">
@@ -462,10 +470,13 @@ function renderHome(){
         <div class="sq-tags">
           <span class="tag" style="color:${c};border-color:${c}33;background:${c}0f">C: ${SQUADS[sq].C}</span>
           <span class="tag" style="color:${c};border-color:${c}33;background:${c}0f">VC: ${SQUADS[sq].VC}</span>
-          <span class="tag" style="color:var(--muted);border-color:var(--border);background:var(--bg3)">${SQUADS[sq].owner}</span>
         </div>
         <div class="sq-bar-wrap"><div class="sq-bar" style="width:${pct}%;background:${c}"></div></div>
-        <div class="sq-mpts">${mpts}</div>
+        <div class="sq-summary">
+          <span class="sq-summary-item"><span class="label">Matches:</span><span class="value">${matchesPlayed}</span></span>
+          <span class="sq-summary-item"><span class="label">Avg:</span><span class="value">${avg}</span></span>
+          <span class="sq-summary-item"><span class="label">Best:</span><span class="value">${best}</span></span>
+        </div>
       </div>
       <div class="sq-pts"><div class="sq-pts-val" style="color:${c}">${total}</div><div class="sq-pts-lbl">pts</div></div>
     </div>`;
@@ -482,6 +493,9 @@ function goDetail(sqName){
   const medals = ["🥇","🥈","🥉"];
   const init = sqName.split(" ").map(w => w[0]).slice(0,2).join("");
 
+  // Show only first 5 matches in hero stats
+  const displayMatches = DATA.matches.slice(0, Math.min(5, DATA.matches.length));
+
   document.getElementById("dHero").innerHTML = `
     <div class="d-hero-top">
       <div class="d-avatar" style="background:${c}18;color:${c};border:2px solid ${c}44">${init}</div>
@@ -492,12 +506,16 @@ function goDetail(sqName){
     </div>
     <div class="d-stats">
       <div class="stat"><div class="stat-v" style="color:${c}">${total}</div><div class="stat-l">Total pts</div></div>
-      ${DATA.matches.map(m => 
-        `<div class="stat"><div class="stat-v" style="color:var(--gold)">${sqMatchTotal(sqName, m.no)}</div><div class="stat-l">${m.name || 'M'+m.no}</div></div>`
-      ).join("")}
+      <div class="stat"><div class="stat-v" style="color:var(--muted)">${sqAverage(sqName)}</div><div class="stat-l">Avg/Match</div></div>
+      <div class="stat"><div class="stat-v" style="color:var(--gold)">${sqBestMatch(sqName)}</div><div class="stat-l">Best Match</div></div>
     </div>`;
 
-  const tabLabels = ["Overall", ...DATA.matches.map(m => m.name || 'Match ' + m.no)];
+  const tabLabels = ["Overall", ...DATA.matches.map(m => {
+    // Shorten match names for tabs
+    const name = m.name || 'Match ' + m.no;
+    return name.length > 15 ? name.substring(0, 13) + '…' : name;
+  })];
+  
   document.getElementById("dTabs").innerHTML = tabLabels.map((l,i) =>
     `<button class="tb ${i===0?'act':''}" onclick="switchTab(${i},this)">${l}</button>`
   ).join("");
@@ -531,7 +549,7 @@ function renderDetail(ti){
   const body = document.getElementById("dBody");
 
   if(ti === 0){
-    // Overall tab
+    // Overall tab with compact horizontal scrolling table
     const rows = sq.players.map(p => {
       const matchPts = DATA.matches.map(m => {
         const base = getBasePoints(p, m.no);
@@ -541,28 +559,40 @@ function renderDetail(ti){
       return {p, matchPts, total, isC: p===sq.C, isVC: p===sq.VC};
     }).sort((a,b) => b.total - a.total);
 
-    body.innerHTML = `<table class="ptable" style="margin-top:8px">
-      <thead><tr>
-        <th>Player</th>
-        ${DATA.matches.map(m => `<th class="r">${(m.name || 'M'+m.no).split(' vs ')[0]}</th>`).join("")}
-        <th class="r">Total</th>
-      </tr></thead>
-      <tbody>${rows.map(({p, matchPts, total, isC, isVC}) => `
-        <tr>
-          <td><div class="pname">${p}${isC?'<span class="rtag rc">C×2</span>':''}${isVC?'<span class="rtag rvc">VC×1.5</span>':''}</div></td>
-          ${matchPts.map((v, idx) => {
-            const matchNo = DATA.matches[idx].no;
-            const hasData = getPlayerMatchData(p, matchNo) !== null;
-            return `<td class="tr ${v===null?'c-muted':v>0?'c-pos':v<0?'c-neg':''}">
-              ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
-            </td>`;
+    body.innerHTML = `<div class="compact-table-wrap">
+      <table class="compact-table">
+        <thead><tr>
+          <th class="player-col">Player</th>
+          ${DATA.matches.map((m, idx) => {
+            // Use M1, M2, etc for column headers
+            return `<th class="match-col" title="${m.name || 'Match ' + m.no}">M${idx + 1}</th>`;
           }).join("")}
-          <td class="tr" style="color:${total>0?c:'var(--muted)'};font-weight:600">${total||'—'}</td>
-        </tr>`).join("")}
-      </tbody></table>`;
+          <th class="total-col">Total</th>
+        </tr></thead>
+        <tbody>${rows.map(({p, matchPts, total, isC, isVC}) => `
+          <tr>
+            <td class="player-col">
+              <div class="pname" style="font-size:11px">
+                ${p}
+                ${isC?'<span class="rtag rc">C</span>':''}
+                ${isVC?'<span class="rtag rvc">VC</span>':''}
+              </div>
+            </td>
+            ${matchPts.map((v, idx) => {
+              const matchNo = DATA.matches[idx].no;
+              const hasData = getPlayerMatchData(p, matchNo) !== null;
+              return `<td class="match-col ${v===null?'c-muted':v>0?'c-pos':v<0?'c-neg':''}">
+                ${v===null?'—':`<span class="${hasData?'pts-clickable':''}" ${hasData?`onclick="showModal('${p}','${currentSq}','${matchNo}')"`:''}>${v}</span>`}
+              </td>`;
+            }).join("")}
+            <td class="total-col" style="color:${total>0?c:'var(--muted)'}">${total||'—'}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>`;
 
   } else {
-    // Match tab
+    // Individual match tab
     const match = DATA.matches[ti - 1];
     const matchTotal = sqMatchTotal(currentSq, match.no);
     
@@ -614,38 +644,30 @@ function showModal(player, sqName, matchNo){
 
   document.getElementById("modalTitle").textContent = player;
   document.getElementById("modalSub").textContent = (match.name || 'Match ' + matchNo);
-
-  // Hide stats grid - we'll show everything in breakdown
   document.getElementById("modalStats").innerHTML = '';
 
-  // Points breakdown - show ALL columns from sheet in order
   const breakdownRows = [];
   
-  // Starting XI (Column F)
   if(breakdown.startingXI && breakdown.startingXI.toLowerCase() !== 'no') {
     breakdownRows.push({label: "Starting XI", val: 4});
   }
   
-  // Batting stats
   if(breakdown.runs !== null && breakdown.runs !== 0) breakdownRows.push({label: "Runs", val: breakdown.runs});
   if(breakdown.fours !== null && breakdown.fours !== 0) breakdownRows.push({label: "Fours", val: breakdown.fours});
   if(breakdown.sixs !== null && breakdown.sixs !== 0) breakdownRows.push({label: "Sixes", val: breakdown.sixs});
   if(breakdown.strikeRate !== null && breakdown.strikeRate !== 0) breakdownRows.push({label: "Strike Rate Bonus", val: breakdown.strikeRate});
   if(breakdown.bonus25_50_75_100 !== null && breakdown.bonus25_50_75_100 !== 0) breakdownRows.push({label: "Milestone Bonus (25/50/75/100)", val: breakdown.bonus25_50_75_100});
   
-  // Bowling stats
   if(breakdown.wickets !== null && breakdown.wickets !== 0) breakdownRows.push({label: "Wickets", val: breakdown.wickets});
   if(breakdown.lbwBowled !== null && breakdown.lbwBowled !== 0) breakdownRows.push({label: "LBW/Bowled Bonus", val: breakdown.lbwBowled});
   if(breakdown.dotBalls !== null && breakdown.dotBalls !== 0) breakdownRows.push({label: "Dot Balls", val: breakdown.dotBalls});
   if(breakdown.maidenOver !== null && breakdown.maidenOver !== 0) breakdownRows.push({label: "Maiden Overs", val: breakdown.maidenOver});
   if(breakdown.economy !== null && breakdown.economy !== 0) breakdownRows.push({label: "Economy Bonus", val: breakdown.economy});
   
-  // Fielding stats
   if(breakdown.catchTaken !== null && breakdown.catchTaken !== 0) breakdownRows.push({label: "Catches", val: breakdown.catchTaken});
   if(breakdown.catchBonus !== null && breakdown.catchBonus !== 0) breakdownRows.push({label: "Catch Bonus", val: breakdown.catchBonus});
   if(breakdown.runoutStumping !== null && breakdown.runoutStumping !== 0) breakdownRows.push({label: "Runout/Stumping", val: breakdown.runoutStumping});
   
-  // Other
   if(breakdown.negative !== null && breakdown.negative !== 0) breakdownRows.push({label: "Negative Points", val: breakdown.negative});
   if(breakdown.bonusPoints !== null && breakdown.bonusPoints !== 0) breakdownRows.push({label: "Bonus Points", val: breakdown.bonusPoints});
 
@@ -681,10 +703,6 @@ function closeModalBtn(){
 // INITIALIZE
 // ══════════════════════════════════════════════════════════════════════════════
 loadData();
-
-// Data fetches only on page load - no auto-refresh
-// If you want auto-refresh, uncomment the line below:
-// setInterval(loadData, 5 * 60 * 1000);
 </script>
 </body>
 </html>
